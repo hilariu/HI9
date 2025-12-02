@@ -1798,6 +1798,7 @@ function registrarVenda(origem, carrinho, formaPagamento) {
 
 function atualizarTudo() {
     renderTabelaEstoque();
+    renderSaidasProdutos();
     renderTabelaProdutosCadastro();
     renderDashboard();
     renderRelatorioVendas();
@@ -2085,11 +2086,56 @@ function renderSaidasProdutos() {
     });
 }
 
+// Preenche o SELECT da saída com base no termo (código ou nome)
+function preencherSelectSaida(termoBusca) {
+    const select = document.getElementById("selectProdutoSaida");
+    if (!select) return;
+
+    const termo = (termoBusca || "").toLowerCase().trim();
+    select.innerHTML = "";
+
+    if (!Array.isArray(produtos) || produtos.length === 0) {
+        const opt = document.createElement("option");
+        opt.textContent = "Nenhum produto cadastrado";
+        opt.disabled = true;
+        opt.selected = true;
+        select.appendChild(opt);
+        return;
+    }
+
+    const filtrados = produtos.filter(p => {
+        const codigo = (p.codigo || "").toLowerCase();
+        const nome = (p.nome || "").toLowerCase();
+        // Se não tiver termo, mostra tudo. Senão, filtra por código OU nome.
+        return !termo || codigo.includes(termo) || nome.includes(termo);
+    });
+
+    if (!filtrados.length) {
+        const opt = document.createElement("option");
+        opt.textContent = "Nenhum produto encontrado";
+        opt.disabled = true;
+        opt.selected = true;
+        select.appendChild(opt);
+    } else {
+        filtrados.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id; // id numérico, como você usa na entrada
+            opt.textContent = `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`;
+            select.appendChild(opt);
+        });
+    }
+}
+
+// Chama uma vez ao carregar a página (ou quando essa parte do DOM já existir)
+document.addEventListener("DOMContentLoaded", () => {
+    preencherSelectSaida("");
+});
+
 document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
     const msg = document.getElementById("mensagemSaida");
     msg.textContent = "";
 
-    if (produtos.length === 0) {
+    if (!Array.isArray(produtos) || produtos.length === 0) {
         msg.textContent = "Cadastre um produto antes de registrar saída.";
         return;
     }
@@ -2137,31 +2183,7 @@ document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
 
 // Filtro por código **ou nome** em SAÍDA
 document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
-    const termo = e.target.value.toLowerCase().trim();
-    const select = document.getElementById("selectProdutoSaida");
-    if (!select) return;
-    select.innerHTML = "";
-
-    const filtrados = produtos.filter(p => {
-        const codigo = (p.codigo || "").toLowerCase();
-        const nome = (p.nome || "").toLowerCase();
-        return !termo || codigo.includes(termo) || nome.includes(termo);
-    });
-
-    if (!filtrados.length) {
-        const opt = document.createElement("option");
-        opt.textContent = "Nenhum produto encontrado";
-        opt.disabled = true;
-        opt.selected = true;
-        select.appendChild(opt);
-    } else {
-        filtrados.forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.id;
-            opt.textContent = `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`;
-            select.appendChild(opt);
-        });
-    }
+    preencherSelectSaida(e.target.value);
 });
 
 
