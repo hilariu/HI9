@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>HI9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header>
+    <div>
+        <h1>HI9</h1>
+        <span>Conforto e Qualidade</span>
+    </div>
+    <div class="user-info">
+        <span class="muted">Hoje • <span id="dateSpan"></span></span>
+        <span id="userLabel" class="muted">Visitante</span>
+        <button class="btn secondary" id="btnLoginHeader">Entrar</button>
+        <button class="btn secondary" id="btnLogout" style="display:none;">Sair</button>
+    </div>
+</header>
+
+<div class="container">
+    <nav>
+        <h2>Menu</h2>
+        <button class="menu-btn active" data-section="loja">
+            Loja
+        </button>
+        <button class="menu-btn" data-section="carrinho" data-visibilidade="cliente">
+            Carrinho
+        </button>
+        <!-- Dashboard apenas para admin -->
+        <button class="menu-btn" data-section="dashboard" data-roles="admin">
+            Dashboard
+        </button>
+        <button class="menu-btn" data-section="caixa" data-roles="admin,gerente,vendedor">
+            Caixa
+            <span class="badge" id="badgeItensCaixa">0 itens</span>
+        </button>
+        <button class="menu-btn" data-section="estoque" data-roles="admin,gerente,vendedor,estoquista">
+            Estoque
+        </button>
+        <button class="menu-btn submenu-toggle" data-submenu="submenuProdutos" data-roles="admin,gerente,vendedor,estoquista">
+            Produtos
+        <span class="arrow">&#9662;</span>
+        </button>
+
+        <div class="submenu" id="submenuProdutos">
+        <button class="menu-btn sub-btn" data-section="produtos" data-roles="admin,gerente,estoquista,vendedor">
+            Cadastro de Produtos
+        </button>
+        <button class="menu-btn sub-btn" data-section="entrada" data-roles="admin,gerente,estoquista,vendedor">
+            Entrada de Produtos
+        </button>
+        <button class="menu-btn sub-btn" data-section="saida" data-roles="admin,gerente,estoquista,vendedor">
+            Saída de Produtos
+        </button>
+        </div>
+        <button class="menu-btn" data-section="descontos" data-roles="admin,gerente">
+            Descontos
+        </button>
+        <button class="menu-btn" data-section="cupons" data-roles="admin,gerente,vendedor">
+            Cupons
+        </button>
+        <button class="menu-btn" data-section="relatorios" data-roles="admin">
+            Relatórios
+        </button>
+        <button class="menu-btn" data-section="usuarios" data-roles="admin">
+            Usuários
+        </button>
+        <button class="menu-btn" data-section="logs" data-roles="admin">
+            Logs
+        </button>
+    </nav>
+
+    <main>
+        <!-- LOJA (PÁGINA INICIAL - VITRINE DEMONSTRATIVA) -->
+        <section id="loja" class="section active">
+            <h2 style="margin-bottom: 10px;">Loja Online</h2>
+            <div class="panel">
+                <h2>Produtos disponíveis</h2>
+                <div id="gridLojaProdutos" class="grid-loja"></div>
+            </div>
+        </section>
+
+        <!-- CARRINHO DO CLIENTE EM ABA SEPARADA -->
+        <section id="carrinho" class="section">
+            <h2 style="margin-bottom: 10px;">Carrinho</h2>
+            <div class="panel">
+                <h2>Itens do carrinho</h2>
+                <div class="scroll-y">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th class="right">Preço</th>
+                            <th class="right">Subtotal</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaCarrinhoLoja">
+                        <tr>
+                            <td colspan="5" class="muted">Carrinho vazio.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <label for="inputCupomLoja" style="margin-top:10px;">Cupom de desconto</label>
+                <div class="cupom-row">
+                    <input id="inputCupomLoja" type="text" placeholder="Digite o cupom" />
+                    <button class="btn secondary" id="btnAplicarCupomLoja">Aplicar</button>
+                </div>
+
+                <label for="selectPagamentoLoja" style="margin-top:10px;">Forma de pagamento</label>
+                <select id="selectPagamentoLoja">
+                    <option value="">Selecione...</option>
+                    <option>Dinheiro</option>
+                    <option>Cartão de crédito</option>
+                    <option>Cartão de débito</option>
+                    <option>PIX</option>
+                    <option>Outro</option>
+                </select>
+                <div class="muted" style="margin-top:4px;">Subtotal da compra:</div>
+                <div class="total-value" id="subtotalLoja">R$ 0,00</div>
+                <div class="muted" style="margin-top:4px;">Desconto:</div>
+                <div class="total-value" id="descontoLoja">R$ 0,00</div>
+                <div class="muted" style="margin-top:4px;">Total da compra:</div>
+                <div class="total-value" id="totalLoja">R$ 0,00</div>
+                <div style="margin-top: 10px;">
+                    <button class="btn" id="btnFinalizarLoja">Finalizar compra</button>
+                    <button class="btn secondary" id="btnLimparLoja">Limpar carrinho</button>
+                </div>
+                <div class="success" id="mensagemLoja"></div>
+            </div>
+        </section>
+
+        <!-- PÁGINA DE DETALHE DO PRODUTO -->
+        <section id="produtoDetalhe" class="section">
+            <div class="produto-detalhe-voltar">
+                <button class="btn secondary" id="btnVoltarLoja">&larr; Voltar para a loja</button>
+            </div>
+            <div class="produto-detalhe-layout panel">
+                <div class="product-gallery">
+                    <div class="product-gallery-main">
+                        <img id="detalheImagem" class="produto-detalhe-imagem" src="" alt="Produto" />
+                    </div>
+                    <div class="product-gallery-thumbs" id="detalheThumbs"></div>
+                </div>
+                <div>
+                    <div id="detalheNome" class="produto-detalhe-titulo">Produto</div>
+                    <div id="detalhePreco" class="produto-detalhe-preco">R$ 0,00</div>
+                    <div id="detalheEstoque" class="produto-detalhe-estoque">Estoque: 0</div>
+
+                    <label for="detalheQtd">Quantidade</label>
+                    <input type="number" id="detalheQtd" min="1" value="1" />
+
+                    <button class="btn" id="btnAdicionarDetalheCarrinho" style="margin-top:6px;">
+                        Adicionar ao carrinho
+                    </button>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD (ADMIN APENAS) -->
+        <section id="dashboard" class="section" data-roles="admin">
+            <h2 style="margin-bottom: 10px;">Resumo geral</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Faturamento do dia</h3>
+                    <div class="value" id="dashTotalDia">R$ 0,00</div>
+                    <small>Vendas ativas de hoje</small>
+                </div>
+                <div class="card">
+                    <h3>Faturamento do mês</h3>
+                    <div class="value" id="dashTotalMes">R$ 0,00</div>
+                    <small>Total deste mês</small>
+                </div>
+                <div class="card">
+                    <h3>Faturamento do ano</h3>
+                    <div class="value" id="dashTotalAno">R$ 0,00</div>
+                    <small>Total deste ano</small>
+                </div>
+                <div class="card">
+                    <h3>Número de vendas</h3>
+                    <div class="value" id="dashNumeroVendas">0</div>
+                    <small>Vendas concluídas (não canceladas)</small>
+                </div>
+                <div class="card">
+                    <h3>Itens em estoque</h3>
+                    <div class="value" id="dashItensEstoque">0</div>
+                    <small>Soma das quantidades</small>
+                </div>
+                <div class="card">
+                    <h3>Produtos com estoque baixo</h3>
+                    <div class="value" id="dashBaixoEstoque">0</div>
+                    <small>Menor ou igual a 5 unidades</small>
+                </div>
+            </div>
+
+            <div class="panel" id="painelCaixaDashboard">
+                <h2>Controle de Caixa (automático diário)</h2>
+                <div id="infoCaixaTexto" class="muted"></div>
+                <div id="infoCaixaDetalhes" class="muted" style="margin-top:4px;"></div>
+                <div id="caixaBotoesAdmin" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Últimas vendas <small>Hoje</small></h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Horário</th>
+                                <th>Origem</th>
+                                <th>Itens</th>
+                                <th class="right">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaUltimasVendas">
+                            <tr>
+                                <td colspan="5" class="muted">Nenhuma venda registrada ainda.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Estoque baixo <small>Alerta</small></h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaEstoqueBaixo">
+                            <tr>
+                                <td colspan="2" class="muted">Nenhum produto com estoque baixo.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CAIXA -->
+        <section id="caixa" class="section" data-roles="admin,gerente,vendedor">
+            <h2 style="margin-bottom: 10px;">Caixa</h2>
+
+            <div class="panel">
+                <div class="muted" id="statusCaixaCaixa"></div>
+            </div>
+
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Novo item</h2>
+                    <div>
+                        <label for="selectProdutoCaixa">Produto</label>
+                        <select id="selectProdutoCaixa"></select>
+
+                        <label for="inputQuantidadeCaixa">Quantidade</label>
+                        <input type="number" id="inputQuantidadeCaixa" min="1" value="1" />
+
+                        <button class="btn" id="btnAdicionarItemCaixa">
+                            Adicionar ao carrinho
+                        </button>
+                        <div class="alert" id="mensagemCaixa"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Totais</h2>
+                    <label for="inputCupomCaixa">Cupom de desconto</label>
+                    <div class="cupom-row">
+                        <input id="inputCupomCaixa" type="text" placeholder="Digite o cupom" />
+                        <button class="btn secondary" id="btnAplicarCupomCaixa">Aplicar</button>
+                    </div>
+                    <label for="selectPagamentoCaixa" style="margin-top:10px;">Forma de pagamento</label>
+                    <select id="selectPagamentoCaixa">
+                        <option value="">Selecione...</option>
+                        <option>Dinheiro</option>
+                        <option>Cartão de crédito</option>
+                        <option>Cartão de débito</option>
+                        <option>PIX</option>
+                        <option>Outro</option>
+                    </select>
+                    <div class="muted">Subtotal da venda:</div>
+                    <div class="total-value" id="subtotalCaixa">R$ 0,00</div>
+                    <div class="muted">Desconto:</div>
+                    <div class="total-value" id="descontoCaixa">R$ 0,00</div>
+                    <div class="muted">Total da venda:</div>
+                    <div class="total-value" id="totalCaixa">R$ 0,00</div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn" id="btnFinalizarVendaCaixa">Finalizar venda</button>
+                        <button class="btn secondary" id="btnCancelarVendaCaixa">Cancelar carrinho</button>
+                    </div>
+                    <div class="success" id="mensagemFinalizacaoCaixa"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Itens no carrinho</h2>
+                <div class="scroll-y">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th class="right">Preço</th>
+                            <th class="right">Subtotal</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaCarrinhoCaixa">
+                        <tr>
+                            <td colspan="5" class="muted">Nenhum item adicionado.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESTOQUE -->
+        <section id="estoque" class="section" data-roles="admin,gerente,vendedor,estoquista">
+            <h2 style="margin-bottom: 10px;">Estoque</h2>
+            <div class="panel">
+                <h2>Lista de produtos</h2>
+                <input type="text" id="searchEstoque" class="search-input" placeholder="Pesquisar por código ou nome..." />
+                <div class="scroll-y">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Produto</th>
+                            <th class="right">Preço</th>
+                            <th class="right">Qtd</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaEstoque">
+                        <tr>
+                            <td colspan="5" class="muted">Nenhum produto cadastrado.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENTRADA DE PRODUTOS -->
+        <section id="entrada" class="section" data-roles="admin,gerente,estoquista,vendedor">
+            <h2 style="margin-bottom: 10px;">Entrada de produtos</h2>
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Nova entrada</h2>
+                    <label for="searchEntradaCodigo">Pesquisar por código</label>
+                    <input type="text" id="searchEntradaCodigo" class="search-input" placeholder="Digite parte do código..." />
+
+                    <label for="selectProdutoEntrada">Produto</label>
+                    <select id="selectProdutoEntrada"></select>
+
+                    <label for="inputQuantidadeEntrada">Quantidade a adicionar</label>
+                    <input type="number" id="inputQuantidadeEntrada" min="1" value="1" />
+
+                    <label for="inputObsEntrada">Observação (opcional)</label>
+                    <textarea id="inputObsEntrada" rows="2" placeholder="Ex: Reposição de estoque"></textarea>
+
+                    <button class="btn" id="btnRegistrarEntrada">Registrar entrada</button>
+                    <div class="success" id="mensagemEntrada"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Histórico de entradas</h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Produto</th>
+                                <th class="right">Qtd</th>
+                                <th>Usuário</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaEntradas">
+                            <tr>
+                                <td colspan="4" class="muted">Nenhuma entrada registrada.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SAÍDA DE PRODUTOS -->
+<section id="saida" class="section" data-roles="admin,gerente,estoquista,vendedor">
+    <h2 style="margin-bottom: 10px;">Saída de produtos</h2>
+    <div class="layout-two">
+        <div class="panel">
+            <h2>Nova saída</h2>
+            <label for="searchSaidaCodigo">Pesquisar por código</label>
+            <input type="text" id="searchSaidaCodigo" class="search-input" placeholder="Digite parte do código..." />
+
+            <label for="selectProdutoSaida">Produto</label>
+            <select id="selectProdutoSaida"></select>
+
+            <label for="inputQuantidadeSaida">Quantidade a retirar</label>
+            <input type="number" id="inputQuantidadeSaida" min="1" value="1" />
+
+            <label for="inputObsSaida">Motivo / Observação (opcional)</label>
+            <textarea id="inputObsSaida" rows="2" placeholder="Ex: perda, avaria, brinde, ajuste de estoque..."></textarea>
+
+            <button class="btn" id="btnRegistrarSaida">Registrar saída</button>
+            <div class="success" id="mensagemSaida"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Histórico de saídas</h2>
+            <div class="scroll-y">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Produto</th>
+                        <th class="right">Qtd</th>
+                        <th>Usuário</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabelaSaidas">
+                    <tr>
+                        <td colspan="4" class="muted">Nenhuma saída registrada.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- CADASTRO PRODUTOS -->
+        <section id="produtos" class="section" data-roles="admin,gerente,estoquista,vendedor">
+            <h2 style="margin-bottom: 10px;">Cadastro de produtos</h2>
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Produto</h2>
+                    <label for="inputNomeProduto">Nome</label>
+                    <input type="text" id="inputNomeProduto" placeholder="Ex: Camiseta Hannya" />
+
+                    <label for="inputCodigoProduto">Código / SKU</label>
+                    <input type="text" id="inputCodigoProduto" placeholder="Ex: HANNYA01" />
+
+                    <label for="inputPrecoProduto">Preço base (R$)</label>
+                    <input type="number" step="0.01" id="inputPrecoProduto" placeholder="Ex: 100.00" />
+
+                    <label for="inputQuantidadeProduto">Quantidade</label>
+                    <input type="number" id="inputQuantidadeProduto" min="0" value="0" />
+
+                    <label for="inputImagemProduto">URL da imagem principal (opcional)</label>
+                    <input type="text" id="inputImagemProduto" placeholder="https://..." />
+
+                    <label for="inputOutrasImagensProduto">Outras imagens (URLs separadas por vírgula, opcional)</label>
+                    <textarea id="inputOutrasImagensProduto" rows="2" placeholder="https://img1..., https://img2..."></textarea>
+
+                    <label for="inputImagemArquivo">Imagem do computador (opcional)</label>
+                    <input type="file" id="inputImagemArquivo" accept="image/*" />
+
+                    <button class="btn" id="btnSalvarProduto">
+                        Cadastrar produto
+                    </button>
+                    <button class="btn secondary" id="btnCancelarEdicaoProduto" style="display:none; margin-top:4px;">
+                        Cancelar edição
+                    </button>
+                    <div class="success" id="mensagemProduto"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Produtos cadastrados</h2>
+                    <input type="text" id="searchProdutosCadastro" class="search-input" placeholder="Pesquisar por código ou nome..." />
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th class="right">Preço</th>
+                                <th>Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaProdutosCadastro">
+                            <tr>
+                                <td colspan="4" class="muted">Nenhum produto cadastrado.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESCONTOS -->
+        <section id="descontos" class="section" data-roles="admin,gerente">
+            <h2 style="margin-bottom: 10px;">Descontos por produto</h2>
+            <div class="panel">
+                <h2>Aplicar desconto (%)</h2>
+                <label for="selectProdutoDesconto">Produto</label>
+                <select id="selectProdutoDesconto"></select>
+
+                <label for="inputPercentualDesconto">Desconto (%)</label>
+                <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
+
+                <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
+                <div class="success" id="mensagemDesconto"></div>
+            </div>
+        </section>
+
+        <!-- CUPONS -->
+        <section id="cupons" class="section" data-roles="admin,gerente,vendedor">
+            <h2 style="margin-bottom: 10px;">Cupons</h2>
+            <div class="layout-two">
+                <div class="panel" id="painelCriarCupom">
+                    <h2>Criação de cupons (somente admin)</h2>
+                    <label for="inputCodigoCupom">Código do cupom</label>
+                    <input type="text" id="inputCodigoCupom" placeholder="Ex: HI9OFF10" />
+
+                    <label for="inputPercentualCupom">Desconto (%)</label>
+                    <input type="number" id="inputPercentualCupom" min="1" max="100" value="10" />
+
+                    <button class="btn" id="btnCriarCupom">Criar cupom</button>
+                    <div class="success" id="mensagemCupom"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Cupons cadastrados</h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Desconto</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaCupons">
+                            <tr>
+                                <td colspan="4" class="muted">Nenhum cupom cadastrado.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RELATÓRIOS -->
+        <section id="relatorios" class="section" data-roles="admin">
+            <h2 style="margin-bottom: 10px;">Relatórios</h2>
+            <div class="panel">
+                <h2>Vendas</h2>
+                <div class="scroll-y">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data/Hora</th>
+                            <th>Origem</th>
+                            <th>Pagamento</th>
+                            <th>Itens</th>
+                            <th>Status</th>
+                            <th>Cupom</th>
+                            <th class="right">Subtotal</th>
+                            <th class="right">Desconto</th>
+                            <th class="right">Total</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaRelatorioVendas">
+                        <tr>
+                            <td colspan="11" class="muted">Nenhuma venda registrada.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- USUÁRIOS -->
+        <section id="usuarios" class="section" data-roles="admin">
+            <h2 style="margin-bottom: 10px;">Usuários</h2>
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Criar novo usuário (admin)</h2>
+                    <label for="novoUserNome">Usuário</label>
+                    <input type="text" id="novoUserNome" placeholder="login do usuário" />
+
+                    <label for="novoUserEmail">E-mail</label>
+                    <input type="email" id="novoUserEmail" placeholder="email@exemplo.com" />
+
+                    <label for="novoUserSenha">Senha</label>
+                    <input type="password" id="novoUserSenha" placeholder="Senha" />
+
+                    <label for="novoUserRole">Cargo</label>
+                    <select id="novoUserRole">
+                        <option value="cliente">Cliente</option>
+                        <option value="estoquista">Estoquista</option>
+                        <option value="vendedor">Vendedor</option>
+                        <option value="gerente">Gerente</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
+                    <button class="btn" id="btnCriarUsuarioAdmin">Criar usuário</button>
+                    <div class="success" id="mensagemUsuarioAdmin"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Gerenciamento de contas</h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuário</th>
+                                <th>E-mail</th>
+                                <th>Tipo</th>
+                                <th>Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaUsuarios">
+                            <tr>
+                                <td colspan="5" class="muted">Nenhum usuário.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOGS -->
+        <section id="logs" class="section" data-roles="admin">
+            <h2 style="margin-bottom: 10px;">Logs do sistema</h2>
+            <div class="panel">
+                <h2>Histórico de ações</h2>
+                <div class="scroll-y">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Usuário</th>
+                            <th>Ação</th>
+                            <th>Detalhes</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaLogs">
+                        <tr>
+                            <td colspan="4" class="muted">Nenhum log registrado.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- MODAL LOGIN/REGISTRO -->
+<div id="loginModal">
+    <div class="login-box">
+        <button class="login-close" id="btnFecharLogin">&times;</button>
+        <h1>Conta</h1>
+        <p>Acesse sua conta ou crie uma nova.</p>
+
+        <div class="login-tabs">
+            <button class="login-tab active" data-tab="login">Login</button>
+            <button class="login-tab" data-tab="register">Registro</button>
+        </div>
+
+        <!-- ÁREA LOGIN -->
+        <div id="loginArea" class="login-area active">
+            <div class="login-section-title">Login</div>
+            <div class="login-group">
+                <label for="loginUsuario">Usuário</label>
+                <input id="loginUsuario" type="text" placeholder="Usuário" />
+            </div>
+            <div class="login-group">
+                <label for="loginSenha">Senha</label>
+                <input id="loginSenha" type="password" placeholder="Senha" />
+            </div>
+            <div class="checkbox-line">
+                <input type="checkbox" id="chkLembrarConta" />
+                <label for="chkLembrarConta">Lembrar conta neste dispositivo</label>
+            </div>
+            <div class="login-actions">
+                <button class="btn" id="btnLogin">Entrar</button>
+            </div>
+        </div>
+
+        <!-- ÁREA REGISTRO -->
+        <div id="registroArea" class="login-area">
+            <div class="login-section-title">Registrar novo usuário</div>
+            <div class="login-group">
+                <label for="registroUsuario">Usuário</label>
+                <input id="registroUsuario" type="text" placeholder="Nome de usuário" />
+            </div>
+            <div class="login-group">
+                <label for="registroEmail">E-mail</label>
+                <input id="registroEmail" type="email" placeholder="seuemail@exemplo.com" />
+            </div>
+            <div class="login-group">
+                <label for="registroSenha">Senha</label>
+                <input id="registroSenha" type="password" placeholder="Senha de acesso" />
+            </div>
+            <div class="login-actions">
+                <button class="btn secondary" id="btnRegistrar">Registrar</button>
+            </div>
+        </div>
+
+        <div id="loginMensagem"></div>
+    </div>
+</div>
+
+<!-- VALIDAÇÃO DE E-MAIL NO REGISTRO -->
+<script>
+    // Valida formato de e-mail (estrutura correta: algo@dominio.extensao)
+    function validarFormatoEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const btnRegistrar = document.getElementById("btnRegistrar");
+        const inputEmailRegistro = document.getElementById("registroEmail");
+        const msg = document.getElementById("loginMensagem");
+
+        if (btnRegistrar && inputEmailRegistro && msg) {
+            // Listener em "captura" pra conseguir bloquear qualquer outro handler de clique se o e-mail estiver inválido
+            btnRegistrar.addEventListener("click", function (event) {
+                const email = inputEmailRegistro.value.trim();
+                msg.innerHTML = "";
+
+                // Se não digitou e-mail, deixa o restante do código decidir (pode ser obrigatório em outro lugar)
+                if (!email) {
+                    msg.innerHTML = "<span style='color:red;'>❌ Digite um e-mail.</span>";
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return;
+                }
+
+                // Valida formato
+                if (!validarFormatoEmail(email)) {
+                    msg.innerHTML = "<span style='color:red;'>❌ E-mail inválido. Verifique e tente novamente.</span>";
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return;
+                }
+
+                // Se chegou aqui, formato está OK. A partir daqui seu script.js continua o fluxo normal do registro.
+                // Se você quiser depois, dá pra acrescentar verificação extra de domínio (DNS) por fetch aqui.
+            }, true); // "true" = captura (roda antes dos outros listeners de clique)
+        }
+    });
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
