@@ -236,10 +236,6 @@ document.querySelectorAll(".submenu-toggle").forEach(btn => {
     });
 });
 
-
-
-
-
 // ------------------------
 // Navegação e visibilidade
 // ------------------------
@@ -498,7 +494,6 @@ function atualizarSelectProdutoCaixa() {
     const select = document.getElementById("selectProdutoCaixa");
     const selectEntrada = document.getElementById("selectProdutoEntrada");
     const selectDesconto = document.getElementById("selectProdutoDesconto");
-    const selectSaida = document.getElementById("selectProdutoSaida");
 
     const popular = (el, textoVazio, formatFn) => {
         if (!el) return;
@@ -1163,7 +1158,7 @@ function renderRelatorioVendas() {
         const td = document.createElement("td");
         td.colSpan = 11;
         td.className = "muted";
-        td.textContent = "Nenhuma venda registrada.";
+        td.textContent = "Nenhuma venda registrado.";
         tr.appendChild(td);
         corpo.appendChild(tr);
         return;
@@ -1360,9 +1355,6 @@ function renderUsuariosAdmin() {
             btnCancelar.textContent = "Cancelar";
             tdAcao.appendChild(btnCancelar);
         } else {
-            // 🚫 AQUI NÃO TEM MAIS SELECT DE ROLE
-            // Só botões Editar / Excluir
-
             const btnEditar = document.createElement("button");
             btnEditar.className = "btn secondary btn-editar-usuario";
             btnEditar.textContent = "Editar";
@@ -1406,7 +1398,7 @@ document.getElementById("tabelaUsuarios").addEventListener("click", (e) => {
         return;
     }
 
-    // Salvar edição (AQUI PODE MUDAR ROLE)
+    // Salvar edição
     if (e.target.classList.contains("btn-salvar-usuario")) {
         const inpNome = tr.querySelector('input[name="editUserNome"]');
         const inpEmail = tr.querySelector('input[name="editUserEmail"]');
@@ -1818,7 +1810,6 @@ function atualizarTudo() {
     renderLogsAdmin();
     salvarDB();
 
-
     const campoBuscaSaida = document.getElementById("searchSaidaCodigo");
     const termoAtual = campoBuscaSaida ? campoBuscaSaida.value : "";
     preencherSelectSaida(termoAtual);
@@ -2048,8 +2039,6 @@ document.getElementById("searchEntradaCodigo").addEventListener("input", (e) => 
     }
 });
 
-
-
 // Garante que o array de saídas exista
 if (typeof saidas === "undefined") {
     var saidas = [];
@@ -2098,6 +2087,7 @@ function renderSaidasProdutos() {
     });
 }
 
+// SELECT de saída igual ao de entrada (busca por código OU nome, mostra tudo se vazio)
 function preencherSelectSaida(termoBusca = "") {
     const select = document.getElementById("selectProdutoSaida");
     if (!select) return;
@@ -2115,10 +2105,10 @@ function preencherSelectSaida(termoBusca = "") {
     }
 
     const filtrados = produtos.filter(p => {
-        const temEstoque = (p.estoque || 0) > 0; // só produtos com estoque
         const codigo = (p.codigo || "").toLowerCase();
         const nome = (p.nome || "").toLowerCase();
-        return temEstoque && (!termo || codigo.includes(termo) || nome.includes(termo));
+        // Se não tiver termo, mostra todos; senão, filtra por código OU nome
+        return !termo || codigo.includes(termo) || nome.includes(termo);
     });
 
     if (!filtrados.length) {
@@ -2136,7 +2126,6 @@ function preencherSelectSaida(termoBusca = "") {
         });
     }
 }
-
 
 document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
     const msg = document.getElementById("mensagemSaida");
