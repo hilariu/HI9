@@ -117,18 +117,18 @@ function carregarDB() {
 
     usuarios = db.usuarios || [];
     produtos = db.produtos || [];
-    vendas = db.vendas || [];
-    caixas = db.caixas || [];
+    vendas   = db.vendas   || [];
+    caixas   = db.caixas   || [];
     entradas = db.entradas || [];
-    saidas = db.saidas || [];
-    cupons = db.cupons || [];
-    logs = db.logs || [];
+    saidas   = Array.isArray(db.saidas) ? db.saidas : []; // ✅ AQUI
+    cupons   = db.cupons   || [];
+    logs     = db.logs     || [];
 
-    db.caixas = caixas;
+    db.caixas   = caixas;
     db.entradas = entradas;
-    db.saidas = saidas;
-    db.cupons = cupons;
-    db.logs = logs;
+    db.saidas   = saidas;
+    db.cupons   = cupons;
+    db.logs     = logs;
 
     usuarios.forEach(u => {
         if (!("email" in u)) u.email = "";
@@ -1804,7 +1804,6 @@ function atualizarTudo() {
     renderCupons();
     atualizarSelectProdutoCaixa();
     renderPainelCaixa();
-    renderProdutos();
     renderEntradasProdutos();
     renderSaidasProdutos();
     renderLogsAdmin();
@@ -2039,10 +2038,6 @@ document.getElementById("searchEntradaCodigo").addEventListener("input", (e) => 
     }
 });
 
-// Garante que o array de saídas exista
-if (typeof saidas === "undefined") {
-    var saidas = [];
-}
 
 // ------------------------
 // Saída de produtos
@@ -2181,6 +2176,9 @@ document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
 document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
     preencherSelectSaida(e.target.value);
 });
+
+
+
 
 
 
