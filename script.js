@@ -498,8 +498,8 @@ function atualizarSelectProdutoCaixa() {
     const select = document.getElementById("selectProdutoCaixa");
     const selectEntrada = document.getElementById("selectProdutoEntrada");
     const selectDesconto = document.getElementById("selectProdutoDesconto");
-    const selectSaida = document.getElementById("selectProdutoSaida"); // <-- ADICIONADO
-
+    const selectSaida = document.getElementById("selectProdutoSaida");
+    
     const popular = (el, textoVazio, formatFn, filtroFn = null) => {
         if (!el) return;
         el.innerHTML = "";
@@ -526,43 +526,9 @@ function atualizarSelectProdutoCaixa() {
         }
     };
 
-    // ---------------------------
-    // Produtos no CAIXA
-    // ---------------------------
-    popular(
-        select,
-        "Nenhum produto cadastrado",
-        p => `${p.nome} (${formatarMoeda(getPrecoVenda(p))})`
-    );
-
-    // ---------------------------
-    // Produtos na ENTRADA
-    // ---------------------------
-    popular(
-        selectEntrada,
-        "Nenhum produto cadastrado",
-        p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`
-    );
-
-    // ---------------------------
-    // Produtos no DESCONTO
-    // ---------------------------
-    popular(
-        selectDesconto,
-        "Nenhum produto cadastrado",
-        p => `${p.codigo || ""} - ${p.nome}`
-    );
-
-    // ---------------------------
-    // Produtos na SAÍDA
-    // Apenas produtos com estoque > 0
-    // ---------------------------
-    popular(
-        selectSaida,
-        "Nenhum produto com estoque",
-        p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`,
-        p => (p.estoque || 0) > 0
-    );
+    popular(select, "Nenhum produto cadastrado", p => `${p.nome} (${formatarMoeda(getPrecoVenda(p))})`);
+    popular(selectEntrada, "Nenhum produto cadastrado", p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`);
+    popular(selectDesconto, "Nenhum produto cadastrado", p => `${p.codigo || ""} - ${p.nome}`);
 }
 
 function renderCarrinhoCaixa() {
