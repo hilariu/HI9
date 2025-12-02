@@ -8,6 +8,7 @@ let produtos;
 let vendas;
 let caixas;
 let entradas;
+let saidas;
 let cupons;
 let logs;
 let proximoIdProduto;
@@ -96,6 +97,7 @@ function criarDBPadrao() {
         proximoIdVenda: 1,
         caixas: [],
         entradas: [],
+        saidas: [],
         cupons: [],
         logs: []
     };
@@ -118,11 +120,13 @@ function carregarDB() {
     vendas = db.vendas || [];
     caixas = db.caixas || [];
     entradas = db.entradas || [];
+    saidas = db.saidas || [];
     cupons = db.cupons || [];
     logs = db.logs || [];
 
     db.caixas = caixas;
     db.entradas = entradas;
+    db.saidas = saidas;
     db.cupons = cupons;
     db.logs = logs;
 
@@ -160,6 +164,7 @@ function salvarDB() {
     db.vendas = vendas;
     db.caixas = caixas;
     db.entradas = entradas;
+    db.saidas = saidas;
     db.cupons = cupons;
     db.logs = logs;
     db.proximoIdProduto = proximoIdProduto;
