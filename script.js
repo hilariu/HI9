@@ -499,25 +499,18 @@ function atualizarSelectProdutoCaixa() {
     const selectEntrada = document.getElementById("selectProdutoEntrada");
     const selectDesconto = document.getElementById("selectProdutoDesconto");
     const selectSaida = document.getElementById("selectProdutoSaida");
-    
-    const popular = (el, textoVazio, formatFn, filtroFn = null) => {
+
+    const popular = (el, textoVazio, formatFn) => {
         if (!el) return;
         el.innerHTML = "";
-
-        let lista = produtos;
-
-        if (filtroFn) {
-            lista = produtos.filter(filtroFn);
-        }
-
-        if (!lista.length) {
+        if (produtos.length === 0) {
             const opt = document.createElement("option");
             opt.textContent = textoVazio;
             opt.disabled = true;
             opt.selected = true;
             el.appendChild(opt);
         } else {
-            lista.forEach(p => {
+            produtos.forEach(p => {
                 const option = document.createElement("option");
                 option.value = p.id;
                 option.textContent = formatFn(p);
