@@ -2186,6 +2186,9 @@ document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
     preencherSelectSaida(e.target.value);
 });
 
+preencherSelectSaida(document.getElementById("searchSaidaCodigo")?.value || "");
+renderSaidasProdutos();
+
 
 
 
