@@ -2092,8 +2092,6 @@ function renderSaidasProdutos() {
     });
 }
 
-// Preenche o SELECT da saída com base no termo (código ou nome)
-// Agora já traz automaticamente todos produtos COM ESTOQUE > 0
 function preencherSelectSaida(termoBusca = "") {
     const select = document.getElementById("selectProdutoSaida");
     if (!select) return;
@@ -2111,7 +2109,7 @@ function preencherSelectSaida(termoBusca = "") {
     }
 
     const filtrados = produtos.filter(p => {
-        const temEstoque = (p.estoque || 0) > 0;      // << só produtos com estoque
+        const temEstoque = (p.estoque || 0) > 0; // só produtos com estoque
         const codigo = (p.codigo || "").toLowerCase();
         const nome = (p.nome || "").toLowerCase();
         return temEstoque && (!termo || codigo.includes(termo) || nome.includes(termo));
@@ -2132,10 +2130,6 @@ function preencherSelectSaida(termoBusca = "") {
         });
     }
 }
-
-// NÃO chame mais preencherSelectSaida("") aqui na definição,
-// porque nessa hora os produtos ainda podem não estar carregados.
-// preencherSelectSaida("");  // <-- pode remover esta linha
 
 
 document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
