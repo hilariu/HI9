@@ -1797,7 +1797,6 @@ function registrarVenda(origem, carrinho, formaPagamento) {
 }
 
 function atualizarTudo() {
-    preencherSelectSaida(document.getElementById("searchSaidaCodigo")?.value || "");
     renderSaidasProdutos();
     renderTabelaEstoque();
     renderTabelaProdutosCadastro();
@@ -2120,17 +2119,17 @@ function preencherSelectSaida(termoBusca) {
     } else {
         filtrados.forEach(p => {
             const opt = document.createElement("option");
-            opt.value = p.id; // id numérico, como você usa na entrada
+            opt.value = p.id;
             opt.textContent = `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`;
             select.appendChild(opt);
         });
     }
 }
 
-// Chama uma vez ao carregar a página (ou quando essa parte do DOM já existir)
-document.addEventListener("DOMContentLoaded", () => {
-    preencherSelectSaida("");
-});
+// ✅ CHAMADA IMEDIATA: carrega TODOS os produtos na aba saída
+// (isso precisa rodar depois que o array `produtos` já estiver carregado)
+preencherSelectSaida("");
+
 
 document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
     const msg = document.getElementById("mensagemSaida");
