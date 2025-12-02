@@ -1797,7 +1797,6 @@ function registrarVenda(origem, carrinho, formaPagamento) {
 }
 
 function atualizarTudo() {
-    renderSaidasProdutos();
     renderTabelaEstoque();
     renderTabelaProdutosCadastro();
     renderDashboard();
@@ -1807,9 +1806,16 @@ function atualizarTudo() {
     renderCupons();
     atualizarSelectProdutoCaixa();
     renderPainelCaixa();
+    renderProdutos();
     renderEntradasProdutos();
+    renderSaidasProdutos();
     renderLogsAdmin();
     salvarDB();
+
+
+    const campoBuscaSaida = document.getElementById("searchSaidaCodigo");
+    const termoAtual = campoBuscaSaida ? campoBuscaSaida.value : "";
+    preencherSelectSaida(termoAtual);
 }
 
 // ------------------------
@@ -2087,11 +2093,12 @@ function renderSaidasProdutos() {
 }
 
 // Preenche o SELECT da saída com base no termo (código ou nome)
-function preencherSelectSaida(termoBusca) {
+// Agora já traz automaticamente todos produtos COM ESTOQUE > 0
+function preencherSelectSaida(termoBusca = "") {
     const select = document.getElementById("selectProdutoSaida");
     if (!select) return;
 
-    const termo = (termoBusca || "").toLowerCase().trim();
+    const termo = termoBusca.toLowerCase().trim();
     select.innerHTML = "";
 
     if (!Array.isArray(produtos) || produtos.length === 0) {
@@ -2104,10 +2111,10 @@ function preencherSelectSaida(termoBusca) {
     }
 
     const filtrados = produtos.filter(p => {
+        const temEstoque = (p.estoque || 0) > 0;      // << só produtos com estoque
         const codigo = (p.codigo || "").toLowerCase();
         const nome = (p.nome || "").toLowerCase();
-        // Se não tiver termo, mostra tudo. Senão, filtra por código OU nome.
-        return !termo || codigo.includes(termo) || nome.includes(termo);
+        return temEstoque && (!termo || codigo.includes(termo) || nome.includes(termo));
     });
 
     if (!filtrados.length) {
@@ -2126,9 +2133,9 @@ function preencherSelectSaida(termoBusca) {
     }
 }
 
-// ✅ CHAMADA IMEDIATA: carrega TODOS os produtos na aba saída
-// (isso precisa rodar depois que o array `produtos` já estiver carregado)
-preencherSelectSaida("");
+// NÃO chame mais preencherSelectSaida("") aqui na definição,
+// porque nessa hora os produtos ainda podem não estar carregados.
+// preencherSelectSaida("");  // <-- pode remover esta linha
 
 
 document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
