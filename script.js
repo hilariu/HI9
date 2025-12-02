@@ -1797,8 +1797,9 @@ function registrarVenda(origem, carrinho, formaPagamento) {
 }
 
 function atualizarTudo() {
-    renderTabelaEstoque();
+    preencherSelectSaida(document.getElementById("searchSaidaCodigo")?.value || "");
     renderSaidasProdutos();
+    renderTabelaEstoque();
     renderTabelaProdutosCadastro();
     renderDashboard();
     renderRelatorioVendas();
@@ -2185,11 +2186,6 @@ document.getElementById("btnRegistrarSaida").addEventListener("click", () => {
 document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
     preencherSelectSaida(e.target.value);
 });
-
-preencherSelectSaida(document.getElementById("searchSaidaCodigo")?.value || "");
-renderSaidasProdutos();
-
-
 
 
 
