@@ -498,18 +498,26 @@ function atualizarSelectProdutoCaixa() {
     const select = document.getElementById("selectProdutoCaixa");
     const selectEntrada = document.getElementById("selectProdutoEntrada");
     const selectDesconto = document.getElementById("selectProdutoDesconto");
+    const selectSaida = document.getElementById("selectProdutoSaida"); // <-- ADICIONADO
 
-    const popular = (el, textoVazio, formatFn) => {
+    const popular = (el, textoVazio, formatFn, filtroFn = null) => {
         if (!el) return;
         el.innerHTML = "";
-        if (produtos.length === 0) {
+
+        let lista = produtos;
+
+        if (filtroFn) {
+            lista = produtos.filter(filtroFn);
+        }
+
+        if (!lista.length) {
             const opt = document.createElement("option");
             opt.textContent = textoVazio;
             opt.disabled = true;
             opt.selected = true;
             el.appendChild(opt);
         } else {
-            produtos.forEach(p => {
+            lista.forEach(p => {
                 const option = document.createElement("option");
                 option.value = p.id;
                 option.textContent = formatFn(p);
@@ -518,9 +526,43 @@ function atualizarSelectProdutoCaixa() {
         }
     };
 
-    popular(select, "Nenhum produto cadastrado", p => `${p.nome} (${formatarMoeda(getPrecoVenda(p))})`);
-    popular(selectEntrada, "Nenhum produto cadastrado", p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`);
-    popular(selectDesconto, "Nenhum produto cadastrado", p => `${p.codigo || ""} - ${p.nome}`);
+    // ---------------------------
+    // Produtos no CAIXA
+    // ---------------------------
+    popular(
+        select,
+        "Nenhum produto cadastrado",
+        p => `${p.nome} (${formatarMoeda(getPrecoVenda(p))})`
+    );
+
+    // ---------------------------
+    // Produtos na ENTRADA
+    // ---------------------------
+    popular(
+        selectEntrada,
+        "Nenhum produto cadastrado",
+        p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`
+    );
+
+    // ---------------------------
+    // Produtos no DESCONTO
+    // ---------------------------
+    popular(
+        selectDesconto,
+        "Nenhum produto cadastrado",
+        p => `${p.codigo || ""} - ${p.nome}`
+    );
+
+    // ---------------------------
+    // Produtos na SAÍDA
+    // Apenas produtos com estoque > 0
+    // ---------------------------
+    popular(
+        selectSaida,
+        "Nenhum produto com estoque",
+        p => `${p.codigo || ""} - ${p.nome} (Estoque: ${p.estoque})`,
+        p => (p.estoque || 0) > 0
+    );
 }
 
 function renderCarrinhoCaixa() {
