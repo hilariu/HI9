@@ -1801,6 +1801,7 @@ function atualizarTudo() {
     renderRelatorioVendas();
     renderLojaProdutos();
     renderUsuariosAdmin();
+    atualizarListaDescontos();
     renderCupons();
     atualizarSelectProdutoCaixa();
     renderPainelCaixa();
@@ -2182,140 +2183,215 @@ document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
 
 
 
-// ------------------------
-// Cadastro / edição de produtos (com múltiplas imagens)
-// ------------------------
-document.getElementById("btnSalvarProduto").addEventListener("click", () => {
-    const nome = document.getElementById("inputNomeProduto").value.trim();
-    const codigo = document.getElementById("inputCodigoProduto").value.trim();
-    const preco = parseFloat((document.getElementById("inputPrecoProduto").value || "0").replace(",", ".")) || 0;
-    const quantidade = parseInt(document.getElementById("inputQuantidadeProduto").value, 10) || 0;
-    const imagemUrl = document.getElementById("inputImagemProduto").value.trim();
-    const outrasImagensStr = document.getElementById("inputOutrasImagensProduto").value.trim();
-    const arquivoInput = document.getElementById("inputImagemArquivo");
-    const arquivo = arquivoInput.files[0];
-    const msg = document.getElementById("mensagemProduto");
-    msg.textContent = "";
-
-    if (!nome) {
-        msg.textContent = "Informe o nome do produto.";
-        return;
-    }
-    if (preco <= 0) {
-        msg.textContent = "Informe um preço válido.";
-        return;
-    }
-    if (quantidade < 0) {
-        msg.textContent = "Quantidade não pode ser negativa.";
-        return;
+document.addEventListener("DOMContentLoaded", () => {
+    function $(id) {
+        return document.getElementById(id);
     }
 
-    const outrasImagens = outrasImagensStr
-        ? outrasImagensStr.split(",").map(s => s.trim()).filter(Boolean)
-        : [];
+    // ------------------------
+    // Cadastro / edição de produtos (com múltiplas imagens)
+    // ------------------------
+    const btnSalvarProduto = $("btnSalvarProduto");
 
-    function salvarProdutoComImagem(imagemPrincipal) {
-        const listaImagens = [];
-        if (imagemPrincipal) listaImagens.push(imagemPrincipal);
-        outrasImagens.forEach(u => {
-            if (!listaImagens.includes(u)) listaImagens.push(u);
-        });
+    if (btnSalvarProduto) {
+        btnSalvarProduto.addEventListener("click", () => {
+            const inputNome = $("inputNomeProduto");
+            const inputCodigo = $("inputCodigoProduto");
+            const inputPreco = $("inputPrecoProduto");
+            const inputQtd = $("inputQuantidadeProduto");
+            const inputImagemUrl = $("inputImagemProduto");
+            const inputOutrasImagens = $("inputOutrasImagensProduto");
+            const arquivoInput = $("inputImagemArquivo");
+            const msg = $("mensagemProduto");
 
-        if (editingProdutoId) {
-            const produto = produtos.find(p => p.id === editingProdutoId);
-            if (!produto) {
-                msg.textContent = "Produto para edição não encontrado.";
+            if (msg) msg.textContent = "";
+
+            // Se algum campo essencial não existir, evitamos erro
+            if (!inputNome || !inputPreco || !inputQtd) {
+                console.error("Alguns inputs obrigatórios não foram encontrados no DOM.");
+                if (msg) msg.textContent = "Erro interno: campos não encontrados.";
                 return;
             }
-            produto.nome = nome;
-            produto.codigo = codigo;
-            produto.precoBase = preco;
-            produto.estoque = quantidade;
-            if (listaImagens.length) {
-                produto.imagem = listaImagens[0];
-                produto.imagens = listaImagens;
-            } else {
-                produto.imagem = "";
-                produto.imagens = [];
+
+            const nome = inputNome.value.trim();
+            const codigo = inputCodigo ? inputCodigo.value.trim() : "";
+            const preco = parseFloat((inputPreco.value || "0").replace(",", ".")) || 0;
+            const quantidade = parseInt(inputQtd.value, 10) || 0;
+            const imagemUrl = inputImagemUrl ? inputImagemUrl.value.trim() : "";
+            const outrasImagensStr = inputOutrasImagens ? inputOutrasImagens.value.trim() : "";
+            const arquivo = arquivoInput && arquivoInput.files ? arquivoInput.files[0] : null;
+
+            // validações básicas
+            if (!nome) {
+                if (msg) msg.textContent = "Informe o nome do produto.";
+                return;
             }
-            msg.textContent = "Produto atualizado com sucesso!";
-            logAcao("editar_produto", `Produto ${produto.nome} (${produto.codigo || "-"}) atualizado.`);
-        } else {
-            const novoProduto = {
-                id: proximoIdProduto++,
-                codigo,
-                nome,
-                precoBase: preco,
-                descontoPercent: 0,
-                estoque: quantidade,
-                imagem: listaImagens[0] || "",
-                imagens: listaImagens
-            };
-            produtos.push(novoProduto);
-            msg.textContent = "Produto cadastrado com sucesso!";
-            logAcao("criar_produto", `Produto criado: ${nome} (${codigo || "-"})`);
-        }
+            if (preco <= 0) {
+                if (msg) msg.textContent = "Informe um preço válido.";
+                return;
+            }
+            if (quantidade < 0) {
+                if (msg) msg.textContent = "Quantidade não pode ser negativa.";
+                return;
+            }
 
-        atualizarTudo();
-        limparFormularioProduto();
+            const outrasImagens = outrasImagensStr
+                ? outrasImagensStr
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                : [];
+
+            // Garante que o array global de produtos exista
+            let listaProdutos = [];
+            if (Array.isArray(window.produtos)) {
+                listaProdutos = window.produtos;
+            } else {
+                window.produtos = [];
+                listaProdutos = window.produtos;
+            }
+
+            // Garante que proximoIdProduto exista
+            if (typeof window.proximoIdProduto !== "number") {
+                const maxId = listaProdutos.length
+                    ? Math.max(...listaProdutos.map((p) => p.id || 0))
+                    : 0;
+                window.proximoIdProduto = maxId + 1;
+            }
+
+            const editingId =
+                typeof window.editingProdutoId === "number"
+                    ? window.editingProdutoId
+                    : null;
+
+            function salvarProdutoComImagem(imagemPrincipal) {
+                const listaImagens = [];
+                if (imagemPrincipal) listaImagens.push(imagemPrincipal);
+
+                // adiciona demais imagens, sem duplicar
+                outrasImagens.forEach((u) => {
+                    if (!listaImagens.includes(u)) listaImagens.push(u);
+                });
+
+                if (editingId) {
+                    // edição
+                    const produto = listaProdutos.find((p) => p.id === editingId);
+                    if (!produto) {
+                        if (msg) msg.textContent = "Produto para edição não encontrado.";
+                        return;
+                    }
+
+                    produto.nome = nome;
+                    produto.codigo = codigo;
+                    produto.precoBase = preco;
+                    produto.estoque = quantidade;
+
+                    if (listaImagens.length) {
+                        produto.imagem = listaImagens[0];
+                        produto.imagens = listaImagens;
+                    } else {
+                        produto.imagem = "";
+                        produto.imagens = [];
+                    }
+
+                    if (msg) msg.textContent = "Produto atualizado com sucesso!";
+                    if (typeof window.logAcao === "function") {
+                        window.logAcao(
+                            "editar_produto",
+                            `Produto ${produto.nome} (${produto.codigo || "-"}) atualizado.`
+                        );
+                    }
+                } else {
+                    // cadastro novo
+                    const novoProduto = {
+                        id: window.proximoIdProduto++,
+                        codigo,
+                        nome,
+                        precoBase: preco,
+                        descontoPercent: 0,
+                        estoque: quantidade,
+                        imagem: listaImagens[0] || "",
+                        imagens: listaImagens,
+                    };
+
+                    listaProdutos.push(novoProduto);
+                    if (msg) msg.textContent = "Produto cadastrado com sucesso!";
+                    if (typeof window.logAcao === "function") {
+                        window.logAcao(
+                            "criar_produto",
+                            `Produto criado: ${nome} (${codigo || "-"})`
+                        );
+                    }
+                }
+
+                if (typeof window.atualizarTudo === "function") {
+                    window.atualizarTudo();
+                }
+
+                if (typeof window.limparFormularioProduto === "function") {
+                    window.limparFormularioProduto();
+                }
+            }
+
+            if (arquivo) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const dataUrl = e.target.result;
+                    salvarProdutoComImagem(dataUrl);
+                };
+                reader.readAsDataURL(arquivo);
+            } else {
+                salvarProdutoComImagem(imagemUrl || null);
+            }
+        });
     }
 
-    if (arquivo) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const dataUrl = e.target.result;
-            salvarProdutoComImagem(dataUrl);
-        };
-        reader.readAsDataURL(arquivo);
-    } else {
-        salvarProdutoComImagem(imagemUrl || null);
-    }
-});
+    // ------------------------
+    // Botão "Cancelar" da seção de descontos
+    // ------------------------
+    const btnCancelar = $("btnCancelarEdicaoProduto"); // confira se o ID no HTML é esse
 
-document.getElementById("btnCancelarEdicaoProduto").addEventListener("click", () => {
-    limparFormularioProduto();
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => {
+            if (typeof window.limparFormularioProduto === "function") {
+                window.limparFormularioProduto();
+            }
+
+            const selectProdutoDesconto = $("selectProdutoDesconto");
+            const inputPercentualDesconto = $("inputPercentualDesconto");
+            const mensagemDesconto = $("mensagemDesconto");
+
+            if (selectProdutoDesconto) selectProdutoDesconto.selectedIndex = 0;
+            if (inputPercentualDesconto) inputPercentualDesconto.value = 0;
+            if (mensagemDesconto) mensagemDesconto.textContent = "";
+        });
+    }
 });
 
 // ------------------------
-// Descontos por produto
+// Lista de descontos ativos
 // ------------------------
-document.getElementById("btnAplicarDesconto").addEventListener("click", () => {
-    const select = document.getElementById("selectProdutoDesconto");
-    const idProduto = parseInt(select.value, 10);
-    const perc = parseFloat(document.getElementById("inputPercentualDesconto").value) || 0;
-    const msg = document.getElementById("mensagemDesconto");
-    msg.textContent = "";
-
-    const produto = produtos.find(p => p.id === idProduto);
-    if (!produto) {
-        msg.textContent = "Produto inválido.";
-        return;
-    }
-    if (perc < 0 || perc > 100) {
-        msg.textContent = "Informe um percentual entre 0 e 100.";
-        return;
-    }
-
-    produto.descontoPercent = perc;
-    salvarDB();
-    atualizarTudo();
-    msg.textContent = "Desconto aplicado com sucesso!";
-    logAcao("desconto_produto", `Desconto de ${perc}% em ${produto.nome} (${produto.codigo || "-"})`);
-});
-
-
 function atualizarListaDescontos() {
     const div = document.getElementById("listaDescontos");
+    if (!div) {
+        console.warn('Elemento "listaDescontos" não encontrado no DOM.');
+        return;
+    }
+
     div.innerHTML = "";
 
-    const produtosComDesconto = produtos.filter(p => (p.descontoPercent || 0) > 0);
+    const listaProdutos = Array.isArray(window.produtos) ? window.produtos : [];
+
+    const produtosComDesconto = listaProdutos.filter(
+        (p) => (p.descontoPercent || 0) > 0
+    );
 
     if (produtosComDesconto.length === 0) {
         div.innerHTML = "<p>Nenhum desconto ativo.</p>";
         return;
     }
 
-    produtosComDesconto.forEach(prod => {
+    produtosComDesconto.forEach((prod) => {
         const item = document.createElement("div");
         item.className = "item-desconto";
 
@@ -2332,17 +2408,27 @@ function atualizarListaDescontos() {
         div.appendChild(item);
     });
 
-    document.querySelectorAll(".btn-remover-desconto").forEach(btn => {
+    div.querySelectorAll(".btn-remover-desconto").forEach((btn) => {
         btn.addEventListener("click", () => {
             const id = parseInt(btn.getAttribute("data-id"), 10);
-            const produto = produtos.find(p => p.id === id);
+            const listaProdutos = Array.isArray(window.produtos) ? window.produtos : [];
+            const produto = listaProdutos.find((p) => p.id === id);
             if (!produto) return;
 
             produto.descontoPercent = 0;
-            salvarDB();
-            atualizarTudo();
-            logAcao("desconto_produto_removido",
-                `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`);
+
+            if (typeof window.salvarDB === "function") {
+                window.salvarDB();
+            }
+            if (typeof window.atualizarTudo === "function") {
+                window.atualizarTudo();
+            }
+            if (typeof window.logAcao === "function") {
+                window.logAcao(
+                    "desconto_produto_removido",
+                    `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`
+                );
+            }
         });
     });
 }
