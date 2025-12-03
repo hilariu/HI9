@@ -2373,6 +2373,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // ------------------------
 function atualizarListaDescontos() {
     const div = document.getElementById("listaDescontos");
+    const msg = document.getElementById("mensagemDesconto");
+
     if (!div) {
         console.warn('Elemento "listaDescontos" não encontrado no DOM.');
         return;
@@ -2388,6 +2390,7 @@ function atualizarListaDescontos() {
 
     if (produtosComDesconto.length === 0) {
         div.innerHTML = "<p>Nenhum desconto ativo.</p>";
+        if (msg) msg.textContent = "";
         return;
     }
 
@@ -2408,6 +2411,7 @@ function atualizarListaDescontos() {
         div.appendChild(item);
     });
 
+    // Eventos dos botões "Remover" da lista
     div.querySelectorAll(".btn-remover-desconto").forEach((btn) => {
         btn.addEventListener("click", () => {
             const id = parseInt(btn.getAttribute("data-id"), 10);
@@ -2415,14 +2419,20 @@ function atualizarListaDescontos() {
             const produto = listaProdutos.find((p) => p.id === id);
             if (!produto) return;
 
+            // zera o desconto
             produto.descontoPercent = 0;
 
             if (typeof window.salvarDB === "function") {
                 window.salvarDB();
             }
             if (typeof window.atualizarTudo === "function") {
-                window.atualizarTudo();
+                window.atualizarTudo(); // aqui dentro você pode chamar atualizarListaDescontos()
             }
+
+            if (msg) {
+                msg.textContent = `Desconto removido de ${produto.nome}.`;
+            }
+
             if (typeof window.logAcao === "function") {
                 window.logAcao(
                     "desconto_produto_removido",
