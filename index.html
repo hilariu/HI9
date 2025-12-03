@@ -520,9 +520,17 @@
         <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
 
         <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
+
+        <!-- NOVO BOTÃO PARA REMOVER DESCONTO DO PRODUTO SELECIONADO -->
+        <button class="btn" id="btnRemoverDescontoProduto" style="margin-left: 10px;">
+            Remover desconto deste produto
+        </button>
+
         <div class="success" id="mensagemDesconto"></div>
 
-        <h2 style="margin: 20px 0;">
+        <h2 style="margin: 20px 0;">Descontos ativos</h2>
+        <!-- LISTA DINÂMICA DE DESCONTOS -->
+        <div id="listaDescontos"></div>
     </div>
 </section>
 
