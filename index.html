@@ -506,23 +506,29 @@
             </div>
         </section>
 
-        <!-- DESCONTOS -->
-        <section id="descontos" class="section" data-roles="admin,gerente">
-            <h2 style="margin-bottom: 10px;">Descontos por produto</h2>
-            <div class="panel">
-                <h2>Aplicar desconto (%)</h2>
-                <label for="selectProdutoDesconto">Produto</label>
-                <select id="selectProdutoDesconto"></select>
+<!-- DESCONTOS -->
+<section id="descontos" class="section" data-roles="admin,gerente">
+    <h2 style="margin-bottom: 10px;">Descontos por produto</h2>
 
-                <label for="inputPercentualDesconto">Desconto (%)</label>
-                <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
+    <div class="panel">
+        <h2>Aplicar desconto (%)</h2>
 
-                <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
-                <div class="success" id="mensagemDesconto"></div>
-                <h3>Descontos aplicados</h3>
-                <div id="listaDescontos"></div>
-            </div>
-        </section>
+        <label for="selectProdutoDesconto">Produto</label>
+        <select id="selectProdutoDesconto"></select>
+
+        <label for="inputPercentualDesconto">Desconto (%)</label>
+        <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
+
+        <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
+        <div class="success" id="mensagemDesconto"></div>
+
+        <hr style="margin: 20px 0;">
+
+        <h3>Descontos ativos</h3>
+        <div id="listaDescontos" class="lista-descontos"></div>
+    </div>
+</section>
+
 
         <!-- CUPONS -->
         <section id="cupons" class="section" data-roles="admin,gerente,vendedor">

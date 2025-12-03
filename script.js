@@ -2308,25 +2308,44 @@ function atualizarListaDescontos() {
     const div = document.getElementById("listaDescontos");
     div.innerHTML = "";
 
-    const comDesconto = produtos.filter(p => (p.descontoPercent || 0) > 0);
+    const produtosComDesconto = produtos.filter(p => (p.descontoPercent || 0) > 0);
 
-    if (comDesconto.length === 0) {
+    if (produtosComDesconto.length === 0) {
         div.innerHTML = "<p>Nenhum desconto ativo.</p>";
         return;
     }
 
-    comDesconto.forEach(prod => {
-        const linha = document.createElement("div");
-        linha.className = "linha-desconto";
+    produtosComDesconto.forEach(prod => {
+        const item = document.createElement("div");
+        item.className = "item-desconto";
 
-        linha.innerHTML = `
-            <strong>${prod.nome}</strong> (${prod.codigo || "-"}) — 
-            <span>${prod.descontoPercent}% de desconto</span>
-            <button data-id="${prod.id}" class="btnRemoverDesconto">Remover</button>
+        item.innerHTML = `
+            <div>
+                <strong>${prod.nome}</strong> (${prod.codigo || "-"})  
+                — <span>${prod.descontoPercent}% OFF</span>
+            </div>
+            <button class="btn-remover-desconto" data-id="${prod.id}">
+                Remover
+            </button>
         `;
 
-        div.appendChild(linha);
+        div.appendChild(item);
     });
+
+    document.querySelectorAll(".btn-remover-desconto").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const id = parseInt(btn.getAttribute("data-id"), 10);
+            const produto = produtos.find(p => p.id === id);
+            if (!produto) return;
+
+            produto.descontoPercent = 0;
+            salvarDB();
+            atualizarTudo();
+            logAcao("desconto_produto_removido",
+                `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`);
+        });
+    });
+}
 
     // Eventos para remover
     document.querySelectorAll(".btnRemoverDesconto").forEach(btn => {
