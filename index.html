@@ -22,56 +22,69 @@
 <div class="container">
     <nav>
         <h2>Menu</h2>
+
         <button class="menu-btn active" data-section="loja">
             Loja
         </button>
+
         <button class="menu-btn" data-section="carrinho" data-visibilidade="cliente">
             Carrinho
         </button>
+
         <!-- Dashboard apenas para admin -->
         <button class="menu-btn" data-section="dashboard" data-roles="admin">
             Dashboard
         </button>
+
         <button class="menu-btn" data-section="caixa" data-roles="admin,gerente,vendedor">
             Caixa
             <span class="badge" id="badgeItensCaixa">0 itens</span>
         </button>
+
         <button class="menu-btn" data-section="estoque" data-roles="admin,gerente,vendedor,estoquista">
             Estoque
         </button>
+
+        <!-- Botão que abre o submenu de Produtos -->
         <button class="menu-btn submenu-toggle" data-submenu="submenuProdutos" data-roles="admin,gerente,vendedor,estoquista">
             Produtos
-        <span class="arrow">&#9662;</span>
+            <span class="arrow">&#9662;</span>
         </button>
 
+        <!-- Submenu de Produtos -->
         <div class="submenu" id="submenuProdutos">
-        <button class="menu-btn sub-btn" data-section="produtos" data-roles="admin,gerente,estoquista,vendedor">
-            Cadastro de Produtos
-        </button>
-        <button class="menu-btn sub-btn" data-section="entrada" data-roles="admin,gerente,estoquista,vendedor">
-            Entrada de Produtos
-        </button>
-        <button class="menu-btn sub-btn" data-section="saida" data-roles="admin,gerente,estoquista,vendedor">
-            Saída de Produtos
-        </button>
+            <button class="menu-btn sub-btn" data-section="produtos" data-roles="admin,gerente,estoquista,vendedor">
+                Cadastro de Produtos
+            </button>
+            <button class="menu-btn sub-btn" data-section="entrada" data-roles="admin,gerente,estoquista,vendedor">
+                Entrada de Produtos
+            </button>
+            <button class="menu-btn sub-btn" data-section="saida" data-roles="admin,gerente,estoquista,vendedor">
+                Saída de Produtos
+            </button>
         </div>
-        </div>
+
         <button class="menu-btn" data-section="descontos" data-roles="admin,gerente">
             Descontos
         </button>
+
         <button class="menu-btn" data-section="cupons" data-roles="admin,gerente,vendedor">
             Cupons
         </button>
+
         <button class="menu-btn" data-section="relatorios" data-roles="admin">
             Relatórios
         </button>
+
         <button class="menu-btn" data-section="usuarios" data-roles="admin">
             Usuários
         </button>
+
         <button class="menu-btn" data-section="logs" data-roles="admin">
             Logs
         </button>
     </nav>
+</div>
 
     <main>
         <!-- LOJA (PÁGINA INICIAL - VITRINE DEMONSTRATIVA) -->
