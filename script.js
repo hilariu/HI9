@@ -2360,7 +2360,6 @@ function atualizarListaDescontos() {
             logAcao("desconto_produto_removido", `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`);
         });
     });
-}
 
 
 // ------------------------
