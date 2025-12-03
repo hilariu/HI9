@@ -2366,6 +2366,129 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mensagemDesconto) mensagemDesconto.textContent = "";
         });
     }
+
+    // ------------------------------------------------------------------
+    // DESCONTOS: aplicar desconto no produto selecionado
+    // ------------------------------------------------------------------
+    const btnAplicarDesconto = $("btnAplicarDesconto");
+
+    if (btnAplicarDesconto) {
+        btnAplicarDesconto.addEventListener("click", () => {
+            const select = $("selectProdutoDesconto");
+            const inputPercentual = $("inputPercentualDesconto");
+            const msg = $("mensagemDesconto");
+
+            if (msg) msg.textContent = "";
+
+            if (!select || !select.value) {
+                if (msg) msg.textContent = "Selecione um produto.";
+                return;
+            }
+
+            const idProduto = parseInt(select.value, 10);
+            const percentual = parseFloat((inputPercentual?.value || "0").replace(",", "."));
+
+            if (isNaN(percentual) || percentual < 0 || percentual > 100) {
+                if (msg) msg.textContent = "Informe um percentual entre 0 e 100.";
+                return;
+            }
+
+            const listaProdutos = Array.isArray(window.produtos) ? window.produtos : [];
+            const produto = listaProdutos.find((p) => p.id === idProduto);
+
+            if (!produto) {
+                if (msg) msg.textContent = "Produto não encontrado.";
+                return;
+            }
+
+            // aplica o desconto
+            produto.descontoPercent = percentual;
+
+            if (typeof window.salvarDB === "function") {
+                window.salvarDB();
+            }
+
+            if (typeof window.atualizarTudo === "function") {
+                window.atualizarTudo();
+            } else if (typeof window.atualizarListaDescontos === "function") {
+                window.atualizarListaDescontos();
+            }
+
+            if (msg) {
+                msg.textContent = `Desconto de ${percentual}% aplicado em ${produto.nome}.`;
+            }
+
+            if (typeof window.logAcao === "function") {
+                window.logAcao(
+                    "desconto_produto_aplicado",
+                    `Aplicado ${percentual}% em ${produto.nome} (${produto.codigo || "-"})`
+                );
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // DESCONTOS: remover desconto do produto selecionado (botão opcional)
+    // ------------------------------------------------------------------
+    const btnRemoverDescontoProduto = $("btnRemoverDescontoProduto");
+
+    if (btnRemoverDescontoProduto) {
+        btnRemoverDescontoProduto.addEventListener("click", () => {
+            const select = $("selectProdutoDesconto");
+            const msg = $("mensagemDesconto");
+
+            if (msg) msg.textContent = "";
+
+            if (!select || !select.value) {
+                if (msg) msg.textContent = "Selecione um produto para remover o desconto.";
+                return;
+            }
+
+            const idProduto = parseInt(select.value, 10);
+            const listaProdutos = Array.isArray(window.produtos) ? window.produtos : [];
+            const produto = listaProdutos.find((p) => p.id === idProduto);
+
+            if (!produto) {
+                if (msg) msg.textContent = "Produto não encontrado.";
+                return;
+            }
+
+            if (!produto.descontoPercent || produto.descontoPercent === 0) {
+                if (msg) msg.textContent = "Este produto não possui desconto aplicado.";
+                return;
+            }
+
+            produto.descontoPercent = 0;
+
+            if (typeof window.salvarDB === "function") {
+                window.salvarDB();
+            }
+
+            if (typeof window.atualizarTudo === "function") {
+                window.atualizarTudo();
+            } else if (typeof window.atualizarListaDescontos === "function") {
+                window.atualizarListaDescontos();
+            }
+
+            if (msg) {
+                msg.textContent = `Desconto removido de ${produto.nome}.`;
+            }
+
+            if (typeof window.logAcao === "function") {
+                window.logAcao(
+                    "desconto_produto_removido",
+                    `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`
+                );
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Ao carregar a página, já desenha a lista de descontos, se existir
+    // ------------------------------------------------------------------
+    if (typeof window.atualizarListaDescontos === "function") {
+        window.atualizarListaDescontos();
+    }
 });
 
 // ------------------------
