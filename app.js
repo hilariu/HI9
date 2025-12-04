@@ -1,6 +1,3 @@
-// app.js
-// Camada de "banco de dados" no navegador + helpers globais
-
 // ------------------------
 // Chaves de armazenamento
 // ------------------------
