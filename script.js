@@ -1,33 +1,3 @@
-// CHAVE DO 'BANCO DE DADOS'
-const DB_KEY = "sistemaCaixaLojaDB_v4_com_descontos_cupons_logs";
-const REMEMBER_KEY = "sistemaCaixaLojaRememberUserId";
-
-let db;
-let usuarios;
-let produtos;
-let vendas;
-let caixas;
-let entradas;
-let saidas;
-let cupons;
-let logs;
-let proximoIdProduto;
-let proximoIdVenda;
-let proximoIdUsuario;
-
-let carrinhoCaixa = [];
-let carrinhoLoja = [];
-let editingProdutoId = null;
-let produtoDetalheAtualId = null;
-
-let currentUser = { id: null, role: "visitante", nome: "Visitante", username: null, email: null };
-
-let filtroEstoque = "";
-let filtroProdutosCadastro = "";
-
-let cupomLojaAtual = null;
-let cupomCaixaAtual = null;
-
 // ------------------------
 // Utilitários
 // ------------------------
