@@ -1,147 +1,117 @@
-// ------------------------
-// Utilitários
-// ------------------------
-const formatarMoeda = (valor) => "R$ " + Number(valor || 0).toFixed(2).replace(".", ",");
+const express = require("express");
+const cors = require("cors");
+const db = require("./db"); // <-- arquivo que criamos
 
-const dataAtualExtenso = () => {
-    const hoje = new Date();
-    return hoje.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
-};
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const hojeStr = () => {
-    const d = new Date();
-    return d.toISOString().slice(0,10);
-};
-
-const formatarDataBrasileira = (dateStr) => {
-    const [ano, mes, dia] = dateStr.split("-");
-    return `${dia}/${mes}/${ano}`;
-};
-
-document.getElementById("dateSpan").textContent = dataAtualExtenso();
-
-// preço com desconto
-function getPrecoVenda(produto) {
-    const base = produto.precoBase != null ? produto.precoBase : (produto.preco || 0);
-    const desc = produto.descontoPercent || 0;
-    const valor = base * (1 - desc / 100);
-    return valor >= 0 ? valor : 0;
-}
-
-// logs
-function logAcao(acao, detalhes) {
-    const registro = {
-        dataHora: new Date().toISOString(),
-        usuario: currentUser.username || "visitante",
-        acao,
-        detalhes
-    };
-    logs.push(registro);
-    salvarDB();
-    renderLogsAdmin();
-}
-
-// ------------------------
-// "Database" localStorage
-// ------------------------
-function criarDBPadrao() {
-    return {
-        usuarios: [
-            { id: 1, username: "hilariu", senha: "123", email: "admin@exemplo.com", admin: true, role: "admin" }
-        ],
-        proximoIdUsuario: 2,
-        produtos: [
-            {
-                id: 1,
-                codigo: "HANNYA01",
-                nome: "Camiseta Hannya",
-                precoBase: 100.00,
-                descontoPercent: 0,
-                estoque: 100,
-                imagem: "https://via.placeholder.com/200x160?text=Hannya",
-                imagens: ["https://via.placeholder.com/400x300?text=Hannya+1"]
-            }
-        ],
-        vendas: [],
-        proximoIdProduto: 2,
-        proximoIdVenda: 1,
-        caixas: [],
-        entradas: [],
-        saidas: [],
-        cupons: [],
-        logs: []
-    };
-}
-
-function carregarDB() {
-    const raw = localStorage.getItem(DB_KEY);
-    if (raw) {
-        try {
-            db = JSON.parse(raw);
-        } catch (e) {
-            db = criarDBPadrao();
-        }
-    } else {
-        db = criarDBPadrao();
-    }
-
-    usuarios = db.usuarios || [];
-    produtos = db.produtos || [];
-    vendas   = db.vendas   || [];
-    caixas   = db.caixas   || [];
-    entradas = db.entradas || [];
-    saidas   = Array.isArray(db.saidas) ? db.saidas : []; // ✅ AQUI
-    cupons   = db.cupons   || [];
-    logs     = db.logs     || [];
-
-    db.caixas   = caixas;
-    db.entradas = entradas;
-    db.saidas   = saidas;
-    db.cupons   = cupons;
-    db.logs     = logs;
-
-    usuarios.forEach(u => {
-        if (!("email" in u)) u.email = "";
-        if (!u.role) {
-            u.role = u.admin ? "admin" : "cliente";
-        }
-        if (u.username && u.username.toLowerCase() === "hilariu") {
-            u.role = "admin";
-            u.admin = true;
-        }
+// -------------------------
+// USUÁRIOS
+// -------------------------
+app.get("/api/usuarios", (req, res) => {
+    db.all("SELECT * FROM usuarios", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
     });
+});
 
-    produtos.forEach(p => {
-        if (p.precoBase == null) {
-            p.precoBase = p.preco || 0;
+app.post("/api/usuarios", (req, res) => {
+    const { username, senha, email, admin = 0, role = "cliente" } = req.body;
+
+    db.run(
+        `
+        INSERT INTO usuarios (username, senha, email, admin, role)
+        VALUES (?, ?, ?, ?, ?)
+        `,
+        [username, senha, email, admin ? 1 : 0, role],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ id: this.lastID });
         }
-        if (p.descontoPercent == null) p.descontoPercent = 0;
-        if (!Array.isArray(p.imagens)) {
-            const imgs = [];
-            if (p.imagem) imgs.push(p.imagem);
-            p.imagens = imgs;
-        }
+    );
+});
+
+// -------------------------
+// PRODUTOS
+// -------------------------
+app.get("/api/produtos", (req, res) => {
+    db.all("SELECT * FROM produtos", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
     });
+});
 
-    proximoIdProduto = db.proximoIdProduto || (produtos.length ? Math.max(...produtos.map(p => p.id)) + 1 : 1);
-    proximoIdVenda = db.proximoIdVenda || 1;
-    proximoIdUsuario = db.proximoIdUsuario || (usuarios.length ? Math.max(...usuarios.map(u => u.id)) + 1 : 1);
-}
+app.post("/api/produtos", (req, res) => {
+    const {
+        codigo,
+        nome,
+        preco_base,
+        desconto_percent = 0,
+        estoque = 0,
+        imagem
+    } = req.body;
 
-function salvarDB() {
-    db.usuarios = usuarios;
-    db.produtos = produtos;
-    db.vendas = vendas;
-    db.caixas = caixas;
-    db.entradas = entradas;
-    db.saidas = saidas;
-    db.cupons = cupons;
-    db.logs = logs;
-    db.proximoIdProduto = proximoIdProduto;
-    db.proximoIdVenda = proximoIdVenda;
-    db.proximoIdUsuario = proximoIdUsuario;
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
-}
+    db.run(
+        `
+        INSERT INTO produtos (codigo, nome, preco_base, desconto_percent, estoque, imagem)
+        VALUES (?, ?, ?, ?, ?, ?)
+        `,
+        [codigo, nome, preco_base, desconto_percent, estoque, imagem],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ id: this.lastID });
+        }
+    );
+});
+
+// atualizar produto
+app.put("/api/produtos/:id", (req, res) => {
+    const { id } = req.params;
+    const {
+        codigo,
+        nome,
+        preco_base,
+        desconto_percent,
+        estoque,
+        imagem
+    } = req.body;
+
+    db.run(
+        `
+        UPDATE produtos
+        SET codigo = ?, nome = ?, preco_base = ?, desconto_percent = ?, estoque = ?, imagem = ?
+        WHERE id = ?
+        `,
+        [codigo, nome, preco_base, desconto_percent, estoque, imagem, id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: "Produto não encontrado" });
+            res.json({ ok: true });
+        }
+    );
+});
+
+app.delete("/api/produtos/:id", (req, res) => {
+    const { id } = req.params;
+    db.run(
+        `DELETE FROM produtos WHERE id = ?`,
+        [id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: "Produto não encontrado" });
+            res.json({ ok: true });
+        }
+    );
+});
+
+// -------------------------
+// INICIAR SERVIDOR
+// -------------------------
+const PORT = 3001;
+app.listen(PORT, () => {
+    console.log("Servidor backend rodando na porta", PORT);
+});
 
 // ------------------------
 // Caixa diário automático
