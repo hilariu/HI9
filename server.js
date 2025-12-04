@@ -1,18 +1,21 @@
-// backend/server.js
 const express = require("express");
 const cors = require("cors");
-const db = require("./db");
-const bcrypt = require("bcrypt");
+const db = require("./db"); // arquivo que exporta a instância do sqlite3.Database
 
 const app = express();
+
+// Middlewares básicos
 app.use(cors());
 app.use(express.json());
 
-const SALT_ROUNDS = 10;
+/*
+Se você quiser servir a pasta do frontend pelo mesmo servidor, pode usar algo assim:
+app.use(express.static("../public")); // ajuste o caminho conforme sua estrutura
+*/
 
-// ---------------------------------------------------------------------
-// USUÁRIOS BÁSICO (lista e cria usuário) – SEM DUPLICAR SERVIDOR
-// ---------------------------------------------------------------------
+// -------------------------
+// USUÁRIOS
+// -------------------------
 
 // Lista todos os usuários
 app.get("/api/usuarios", (req, res) => {
@@ -22,156 +25,212 @@ app.get("/api/usuarios", (req, res) => {
     });
 });
 
-// Cria usuário (ex: cadastro via painel admin) – já grava senha com hash
-app.post("/api/usuarios", async (req, res) => {
-    try {
-        const { username, senha, email, admin, role } = req.body;
-
-        if (!username || !senha) {
-            return res.status(400).json({ error: "Informe usuário e senha." });
-        }
-
-        const hash = await bcrypt.hash(senha, SALT_ROUNDS);
-
-        db.run(
-            `INSERT INTO usuarios (username, senha, email, admin, role)
-             VALUES (?, ?, ?, ?, ?)`,
-            [username, hash, email || "", admin ? 1 : 0, role || (admin ? "admin" : "cliente")],
-            function (err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ id: this.lastID });
-            }
-        );
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: "Erro no servidor." });
-    }
+// Busca usuário por ID
+app.get("/api/usuarios/:id", (req, res) => {
+    const { id } = req.params;
+    db.get("SELECT * FROM usuarios WHERE id = ?", [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Usuário não encontrado" });
+        res.json(row);
+    });
 });
 
-// ---------------------------------------------------------------------
-// LOGS
-// ---------------------------------------------------------------------
+// Cria novo usuário
+app.post("/api/usuarios", (req, res) => {
+    const { username, senha, email, admin = 0, role = "cliente" } = req.body;
 
-app.post("/api/logs", (req, res) => {
-    const { dataHora, usuario, acao, detalhes } = req.body;
+    if (!username || !senha || !email) {
+        return res.status(400).json({ error: "username, senha e email são obrigatórios" });
+    }
+
+    const sql = `
+        INSERT INTO usuarios (username, senha, email, admin, role)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
     db.run(
-        `INSERT INTO logs (dataHora, usuario, acao, detalhes)
-         VALUES (?, ?, ?, ?)`,
-        [dataHora, usuario, acao, detalhes],
+        sql,
+        [username, senha, email, admin ? 1 : 0, role],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: this.lastID });
+            res.status(201).json({ id: this.lastID });
         }
     );
 });
 
-app.get("/api/logs", (req, res) => {
-    db.all("SELECT * FROM logs ORDER BY id DESC", [], (err, rows) => {
+// Atualiza usuário
+app.put("/api/usuarios/:id", (req, res) => {
+    const { id } = req.params;
+    const { username, senha, email, admin = 0, role = "cliente" } = req.body;
+
+    const sql = `
+        UPDATE usuarios
+        SET username = ?, senha = ?, email = ?, admin = ?, role = ?
+        WHERE id = ?
+    `;
+
+    db.run(
+        sql,
+        [username, senha, email, admin ? 1 : 0, role, id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Usuário não encontrado" });
+            }
+            res.json({ ok: true });
+        }
+    );
+});
+
+// Remove usuário
+app.delete("/api/usuarios/:id", (req, res) => {
+    const { id } = req.params;
+
+    // opcional: impedir excluir o admin principal "hilariu"
+    db.get("SELECT username FROM usuarios WHERE id = ?", [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Usuário não encontrado" });
+
+        if (row.username && row.username.toLowerCase() === "hilariu") {
+            return res.status(400).json({ error: 'Usuário "hilariu" não pode ser excluído.' });
+        }
+
+        db.run("DELETE FROM usuarios WHERE id = ?", [id], function (err2) {
+            if (err2) return res.status(500).json({ error: err2.message });
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Usuário não encontrado" });
+            }
+            res.json({ ok: true });
+        });
+    });
+});
+
+// (Opcional) Rota de login via backend
+app.post("/api/login", (req, res) => {
+    const { username, senha } = req.body;
+
+    if (!username || !senha) {
+        return res.status(400).json({ error: "Informe username e senha" });
+    }
+
+    const sql = `
+        SELECT * FROM usuarios
+        WHERE LOWER(username) = LOWER(?) AND senha = ?
+    `;
+
+    db.get(sql, [username, senha], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(401).json({ error: "Usuário ou senha inválidos" });
+
+        // Aqui você poderia gerar token JWT, etc. Por enquanto devolve o usuário.
+        res.json(row);
+    });
+});
+
+// -------------------------
+// PRODUTOS
+// -------------------------
+
+// Lista todos os produtos
+app.get("/api/produtos", (req, res) => {
+    db.all("SELECT * FROM produtos", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-// ---------------------------------------------------------------------
-// AUTENTICAÇÃO (REGISTRO / LOGIN / LEMBRAR CONTA)
-// ---------------------------------------------------------------------
-
-// REGISTRO
-app.post("/api/auth/register", async (req, res) => {
-    try {
-        const { username, email, senha } = req.body;
-
-        if (!username || !email || !senha) {
-            return res.status(400).json({ error: "Preencha usuário, e-mail e senha." });
-        }
-
-        // verifica se já existe usuário
-        db.get(
-            "SELECT id FROM usuarios WHERE username = ?",
-            [username],
-            async (err, row) => {
-                if (err) return res.status(500).json({ error: err.message });
-
-                if (row) {
-                    return res.status(400).json({ error: "Usuário já existe." });
-                }
-
-                const hash = await bcrypt.hash(senha, SALT_ROUNDS);
-
-                db.run(
-                    `INSERT INTO usuarios (username, senha, email, admin, role)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [username, hash, email, 0, "cliente"],
-                    function (err2) {
-                        if (err2) return res.status(500).json({ error: err2.message });
-                        res.json({
-                            id: this.lastID,
-                            username,
-                            email,
-                            admin: 0,
-                            role: "cliente"
-                        });
-                    }
-                );
-            }
-        );
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: "Erro no servidor." });
-    }
+// Busca produto por ID
+app.get("/api/produtos/:id", (req, res) => {
+    const { id } = req.params;
+    db.get("SELECT * FROM produtos WHERE id = ?", [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Produto não encontrado" });
+        res.json(row);
+    });
 });
 
-// LOGIN
-app.post("/api/auth/login", (req, res) => {
-    const { username, senha } = req.body;
+// Cria novo produto
+app.post("/api/produtos", (req, res) => {
+    const {
+        codigo,
+        nome,
+        preco_base,
+        desconto_percent = 0,
+        estoque = 0,
+        imagem
+    } = req.body;
 
-    if (!username || !senha) {
-        return res.status(400).json({ error: "Informe usuário e senha." });
+    if (!nome || typeof preco_base === "undefined") {
+        return res.status(400).json({ error: "nome e preco_base são obrigatórios" });
     }
 
-    db.get(
-        "SELECT * FROM usuarios WHERE username = ?",
-        [username],
-        async (err, user) => {
+    const sql = `
+        INSERT INTO produtos (codigo, nome, preco_base, desconto_percent, estoque, imagem)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    db.run(
+        sql,
+        [codigo || null, nome, preco_base, desconto_percent, estoque, imagem || null],
+        function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            if (!user) return res.status(400).json({ error: "Usuário não encontrado." });
-
-            const ok = await bcrypt.compare(senha, user.senha);
-            if (!ok) return res.status(400).json({ error: "Senha incorreta." });
-
-            res.json({
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                admin: !!user.admin,
-                role: user.role || (user.admin ? "admin" : "cliente")
-            });
+            res.status(201).json({ id: this.lastID });
         }
     );
 });
 
-// BUSCAR USUÁRIO POR ID (para "lembrar conta")
-app.get("/api/auth/me/:id", (req, res) => {
-    const id = req.params.id;
+// Atualiza produto
+app.put("/api/produtos/:id", (req, res) => {
+    const { id } = req.params;
+    const {
+        codigo,
+        nome,
+        preco_base,
+        desconto_percent = 0,
+        estoque = 0,
+        imagem
+    } = req.body;
 
-    db.get("SELECT * FROM usuarios WHERE id = ?", [id], (err, user) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!user) return res.status(404).json({ error: "Usuário não encontrado." });
+    const sql = `
+        UPDATE produtos
+        SET codigo = ?, nome = ?, preco_base = ?, desconto_percent = ?, estoque = ?, imagem = ?
+        WHERE id = ?
+    `;
 
-        res.json({
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            admin: !!user.admin,
-            role: user.role || (user.admin ? "admin" : "cliente")
-        });
-    });
+    db.run(
+        sql,
+        [codigo || null, nome, preco_base, desconto_percent, estoque, imagem || null, id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Produto não encontrado" });
+            }
+            res.json({ ok: true });
+        }
+    );
 });
 
-// ---------------------------------------------------------------------
-// INICIAR SERVIDOR – APENAS UMA VEZ!
-// ---------------------------------------------------------------------
-const PORT = 3001;
+// Remove produto
+app.delete("/api/produtos/:id", (req, res) => {
+    const { id } = req.params;
+    db.run(
+        "DELETE FROM produtos WHERE id = ?",
+        [id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Produto não encontrado" });
+            }
+            res.json({ ok: true });
+        }
+    );
+});
+
+// -------------------------
+// INICIAR SERVIDOR
+// -------------------------
+const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
-    console.log(`Backend rodando em http://localhost:${PORT}`);
+    console.log("Servidor backend rodando na porta", PORT);
 });

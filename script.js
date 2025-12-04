@@ -1,118 +1,3 @@
-const express = require("express");
-const cors = require("cors");
-const db = require("./db"); // <-- arquivo que criamos
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// -------------------------
-// USUÁRIOS
-// -------------------------
-app.get("/api/usuarios", (req, res) => {
-    db.all("SELECT * FROM usuarios", [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-app.post("/api/usuarios", (req, res) => {
-    const { username, senha, email, admin = 0, role = "cliente" } = req.body;
-
-    db.run(
-        `
-        INSERT INTO usuarios (username, senha, email, admin, role)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [username, senha, email, admin ? 1 : 0, role],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ id: this.lastID });
-        }
-    );
-});
-
-// -------------------------
-// PRODUTOS
-// -------------------------
-app.get("/api/produtos", (req, res) => {
-    db.all("SELECT * FROM produtos", [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-app.post("/api/produtos", (req, res) => {
-    const {
-        codigo,
-        nome,
-        preco_base,
-        desconto_percent = 0,
-        estoque = 0,
-        imagem
-    } = req.body;
-
-    db.run(
-        `
-        INSERT INTO produtos (codigo, nome, preco_base, desconto_percent, estoque, imagem)
-        VALUES (?, ?, ?, ?, ?, ?)
-        `,
-        [codigo, nome, preco_base, desconto_percent, estoque, imagem],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ id: this.lastID });
-        }
-    );
-});
-
-// atualizar produto
-app.put("/api/produtos/:id", (req, res) => {
-    const { id } = req.params;
-    const {
-        codigo,
-        nome,
-        preco_base,
-        desconto_percent,
-        estoque,
-        imagem
-    } = req.body;
-
-    db.run(
-        `
-        UPDATE produtos
-        SET codigo = ?, nome = ?, preco_base = ?, desconto_percent = ?, estoque = ?, imagem = ?
-        WHERE id = ?
-        `,
-        [codigo, nome, preco_base, desconto_percent, estoque, imagem, id],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            if (this.changes === 0) return res.status(404).json({ error: "Produto não encontrado" });
-            res.json({ ok: true });
-        }
-    );
-});
-
-app.delete("/api/produtos/:id", (req, res) => {
-    const { id } = req.params;
-    db.run(
-        `DELETE FROM produtos WHERE id = ?`,
-        [id],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            if (this.changes === 0) return res.status(404).json({ error: "Produto não encontrado" });
-            res.json({ ok: true });
-        }
-    );
-});
-
-// -------------------------
-// INICIAR SERVIDOR
-// -------------------------
-const PORT = 3001;
-app.listen(PORT, () => {
-    console.log("Servidor backend rodando na porta", PORT);
-});
-
 // ------------------------
 // Caixa diário automático
 // ------------------------
@@ -137,7 +22,7 @@ function fecharCaixasAntigos() {
     const hoje = hojeStr();
     caixas.forEach(c => {
         if (c.data < hoje && c.aberto) {
-            const vendasDia = vendas.filter(v => v.status === "ativa" && v.dataHora.slice(0,10) === c.data);
+            const vendasDia = vendas.filter(v => v.status === "ativa" && v.dataHora.slice(0, 10) === c.data);
             const totalDia = vendasDia.reduce((s, v) => s + v.total, 0);
             c.aberto = false;
             c.horaFechamento = new Date().toISOString();
@@ -157,6 +42,9 @@ function garantirCaixaDeHoje() {
     }
 }
 
+// ------------------------
+// Submenu (menu lateral)
+// ------------------------
 document.querySelectorAll(".submenu-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-submenu");
@@ -177,8 +65,6 @@ document.querySelectorAll(".submenu-toggle").forEach(btn => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    // ...
-
     // Quando clicar na SETA, só abre/fecha o submenu
     document.querySelectorAll(".submenu-toggle .arrow").forEach(arrow => {
         arrow.addEventListener("click", (e) => {
@@ -195,8 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // seu código de clique nos botões do menu pode continuar igual,
-    // por exemplo:
+    // Botões de sub-menu (se tiver)
     document.querySelectorAll(".menu-btn.sub-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const sectionId = btn.getAttribute("data-section");
@@ -204,10 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // showSection(sectionId) ou o que você já estiver usando
         });
     });
-
-    // ...
 });
-
 
 // ------------------------
 // Navegação e visibilidade
@@ -652,7 +534,7 @@ function renderTabelaEstoque() {
 
     const lista = produtos.filter(p => {
         if (!filtroEstoque) return true;
-        const txt = (p.codigo || "" + " " + p.nome || "").toLowerCase();
+        const txt = ((p.codigo || "") + " " + (p.nome || "")).toLowerCase();
         return txt.includes(filtroEstoque.toLowerCase());
     });
 
@@ -1001,7 +883,7 @@ function renderPainelCaixa() {
         detalhes.textContent = "";
     } else {
         texto.textContent = `Caixa do dia ${formatarDataBrasileira(c.data)} - ` + (c.aberto ? "ABERTO (automático)" : "FECHADO");
-        const vendasDia = vendas.filter(v => v.status === "ativa" && v.dataHora.slice(0,10) === c.data);
+        const vendasDia = vendas.filter(v => v.status === "ativa" && v.dataHora.slice(0, 10) === c.data);
         const totalDia = vendasDia.reduce((s, v) => s + v.total, 0);
         let detalhesTxt = `Saldo inicial: ${formatarMoeda(c.saldoInicial || 0)}. Faturamento do dia: ${formatarMoeda(totalDia)}.`;
         if (!c.aberto && c.saldoFinal != null) {
@@ -1021,7 +903,7 @@ function renderDashboard() {
     const mesAtual = hoje.getMonth();
     const diaStr = hojeStr();
 
-    const vendasDia = vendasAtivas.filter(v => v.dataHora.slice(0,10) === diaStr);
+    const vendasDia = vendasAtivas.filter(v => v.dataHora.slice(0, 10) === diaStr);
     const totalDia = vendasDia.reduce((s, v) => s + v.total, 0);
     const vendasMes = vendasAtivas.filter(v => {
         const d = new Date(v.dataHora);
@@ -1417,7 +1299,8 @@ document.getElementById("tabelaUsuarios").addEventListener("click", (e) => {
         usuario.admin = (novaRole === "admin");
 
         if (novaSenha) {
-            usuario.password = novaSenha;
+            // CORRIGIDO: antes era usuario.password
+            usuario.senha = novaSenha;
         }
 
         salvarDB();
@@ -1512,6 +1395,7 @@ function cancelarVenda(idVenda) {
     }
 
     const senha = prompt("Senha do admin principal:");
+    // DICA: troque "" pela senha desejada, ex: "1234"
     if (senha !== "") {
         alert("Senha incorreta. Venda NÃO cancelada.");
         return;
@@ -2012,7 +1896,6 @@ document.getElementById("searchEntradaCodigo").addEventListener("input", (e) => 
     }
 });
 
-
 // ------------------------
 // Saída de produtos
 // ------------------------
@@ -2151,19 +2034,14 @@ document.getElementById("searchSaidaCodigo").addEventListener("input", (e) => {
     preencherSelectSaida(e.target.value);
 });
 
-
-
-
-
-
+// ------------------------
+// Cadastro / edição de produtos (com múltiplas imagens)
+// ------------------------
 document.addEventListener("DOMContentLoaded", () => {
     function $(id) {
         return document.getElementById(id);
     }
 
-    // ------------------------
-    // Cadastro / edição de produtos (com múltiplas imagens)
-    // ------------------------
     const btnSalvarProduto = $("btnSalvarProduto");
 
     if (btnSalvarProduto) {
@@ -2319,10 +2197,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ------------------------
     // Botão "Cancelar" da seção de descontos
-    // ------------------------
-    const btnCancelar = $("btnCancelarEdicaoProduto"); // confira se o ID no HTML é esse
+    const btnCancelar = $("btnCancelarEdicaoProduto");
 
     if (btnCancelar) {
         btnCancelar.addEventListener("click", () => {
@@ -2340,9 +2216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ------------------------------------------------------------------
     // DESCONTOS: aplicar desconto no produto selecionado
-    // ------------------------------------------------------------------
     const btnAplicarDesconto = $("btnAplicarDesconto");
 
     if (btnAplicarDesconto) {
@@ -2400,9 +2274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ------------------------------------------------------------------
     // DESCONTOS: remover desconto do produto selecionado (botão opcional)
-    // ------------------------------------------------------------------
     const btnRemoverDescontoProduto = $("btnRemoverDescontoProduto");
 
     if (btnRemoverDescontoProduto) {
@@ -2456,9 +2328,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ------------------------------------------------------------------
     // Ao carregar a página, já desenha a lista de descontos, se existir
-    // ------------------------------------------------------------------
     if (typeof window.atualizarListaDescontos === "function") {
         window.atualizarListaDescontos();
     }
@@ -2538,21 +2408,6 @@ function atualizarListaDescontos() {
         });
     });
 }
-
-    // Eventos para remover
-    document.querySelectorAll(".btnRemoverDesconto").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = parseInt(btn.getAttribute("data-id"), 10);
-            const produto = produtos.find(p => p.id === id);
-            if (!produto) return;
-
-            produto.descontoPercent = 0;
-            salvarDB();
-            atualizarTudo();
-            logAcao("desconto_produto_removido", `Removido desconto de ${produto.nome} (${produto.codigo || "-"})`);
-        });
-    });
-
 
 // ------------------------
 // Criação de usuário pelo admin

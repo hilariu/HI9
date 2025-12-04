@@ -85,7 +85,6 @@
             Logs
         </button>
     </nav>
-</div>
 
     <main>
         <!-- LOJA (PÁGINA INICIAL - VITRINE DEMONSTRATIVA) -->
@@ -149,37 +148,37 @@
             </div>
         </section>
 
-<!-- PÁGINA DE DETALHE DO PRODUTO -->
-<section id="produtoDetalhe" class="section">
-    <div class="produto-detalhe-voltar">
-        <button class="btn secondary" id="btnVoltarLoja">&larr; Voltar para a loja</button>
-    </div>
-    <div class="produto-detalhe-layout panel">
-        <div class="product-gallery">
-            <div class="product-gallery-main">
-                <img id="detalheImagem" class="produto-detalhe-imagem" src="" alt="Produto" />
+        <!-- PÁGINA DE DETALHE DO PRODUTO -->
+        <section id="produtoDetalhe" class="section">
+            <div class="produto-detalhe-voltar">
+                <button class="btn secondary" id="btnVoltarLoja">&larr; Voltar para a loja</button>
             </div>
-            <div class="product-gallery-thumbs" id="detalheThumbs"></div>
-        </div>
-        <div>
-            <div id="detalheNome" class="produto-detalhe-titulo">Produto</div>
-            <div id="detalhePreco" class="produto-detalhe-preco">R$ 0,00</div>
-            <div id="detalheEstoque" class="produto-detalhe-estoque">Estoque: 0</div>
+            <div class="produto-detalhe-layout panel">
+                <div class="product-gallery">
+                    <div class="product-gallery-main">
+                        <img id="detalheImagem" class="produto-detalhe-imagem" src="" alt="Produto" />
+                    </div>
+                    <div class="product-gallery-thumbs" id="detalheThumbs"></div>
+                </div>
+                <div>
+                    <div id="detalheNome" class="produto-detalhe-titulo">Produto</div>
+                    <div id="detalhePreco" class="produto-detalhe-preco">R$ 0,00</div>
+                    <div id="detalheEstoque" class="produto-detalhe-estoque">Estoque: 0</div>
 
-            <label for="detalheQtd">Quantidade</label>
-            <input type="number" id="detalheQtd" min="1" value="1" />
+                    <label for="detalheQtd">Quantidade</label>
+                    <input type="number" id="detalheQtd" min="1" value="1" />
 
-            <button class="btn" id="btnAdicionarDetalheCarrinho" style="margin-top:6px;">
-                Adicionar ao carrinho
-            </button>
+                    <button class="btn" id="btnAdicionarDetalheCarrinho" style="margin-top:6px;">
+                        Adicionar ao carrinho
+                    </button>
 
-            <!-- NOVO: Botão Comprar Agora -->
-            <button class="btn primary" id="btnComprarAgoraDetalhe" style="margin-top:6px;">
-                Comprar agora
-            </button>
-        </div>
-    </div>
-</section>
+                    <!-- Botão Comprar Agora (lógica depois no script.js, se quiser) -->
+                    <button class="btn primary" id="btnComprarAgoraDetalhe" style="margin-top:6px;">
+                        Comprar agora
+                    </button>
+                </div>
+            </div>
+        </section>
 
         <!-- DASHBOARD (ADMIN APENAS) -->
         <section id="dashboard" class="section" data-roles="admin">
@@ -419,49 +418,49 @@
         </section>
 
         <!-- SAÍDA DE PRODUTOS -->
-<section id="saida" class="section" data-roles="admin,gerente,estoquista,vendedor">
-    <h2 style="margin-bottom: 10px;">Saída de produtos</h2>
-    <div class="layout-two">
-        <div class="panel">
-            <h2>Nova saída</h2>
-            <label for="searchSaidaCodigo">Pesquisar por código</label>
-            <input type="text" id="searchSaidaCodigo" class="search-input" placeholder="Digite parte do código..." />
+        <section id="saida" class="section" data-roles="admin,gerente,estoquista,vendedor">
+            <h2 style="margin-bottom: 10px;">Saída de produtos</h2>
+            <div class="layout-two">
+                <div class="panel">
+                    <h2>Nova saída</h2>
+                    <label for="searchSaidaCodigo">Pesquisar por código</label>
+                    <input type="text" id="searchSaidaCodigo" class="search-input" placeholder="Digite parte do código..." />
 
-            <label for="selectProdutoSaida">Produto</label>
-            <select id="selectProdutoSaida"></select>
+                    <label for="selectProdutoSaida">Produto</label>
+                    <select id="selectProdutoSaida"></select>
 
-            <label for="inputQuantidadeSaida">Quantidade a retirar</label>
-            <input type="number" id="inputQuantidadeSaida" min="1" value="1" />
+                    <label for="inputQuantidadeSaida">Quantidade a retirar</label>
+                    <input type="number" id="inputQuantidadeSaida" min="1" value="1" />
 
-            <label for="inputObsSaida">Motivo / Observação (opcional)</label>
-            <textarea id="inputObsSaida" rows="2" placeholder="Ex: perda, avaria, brinde, ajuste de estoque..."></textarea>
+                    <label for="inputObsSaida">Motivo / Observação (opcional)</label>
+                    <textarea id="inputObsSaida" rows="2" placeholder="Ex: perda, avaria, brinde, ajuste de estoque..."></textarea>
 
-            <button class="btn" id="btnRegistrarSaida">Registrar saída</button>
-            <div class="success" id="mensagemSaida"></div>
-        </div>
+                    <button class="btn" id="btnRegistrarSaida">Registrar saída</button>
+                    <div class="success" id="mensagemSaida"></div>
+                </div>
 
-        <div class="panel">
-            <h2>Histórico de saídas</h2>
-            <div class="scroll-y">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Produto</th>
-                        <th class="right">Qtd</th>
-                        <th>Usuário</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tabelaSaidas">
-                    <tr>
-                        <td colspan="4" class="muted">Nenhuma saída registrada.</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="panel">
+                    <h2>Histórico de saídas</h2>
+                    <div class="scroll-y">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Produto</th>
+                                <th class="right">Qtd</th>
+                                <th>Usuário</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaSaidas">
+                            <tr>
+                                <td colspan="4" class="muted">Nenhuma saída registrada.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
 
         <!-- CADASTRO PRODUTOS -->
         <section id="produtos" class="section" data-roles="admin,gerente,estoquista,vendedor">
@@ -523,34 +522,31 @@
             </div>
         </section>
 
-<!-- DESCONTOS -->
-<section id="descontos" class="section" data-roles="admin,gerente">
-    <h2 style="margin-bottom: 10px;">Descontos por produto</h2>
+        <!-- DESCONTOS -->
+        <section id="descontos" class="section" data-roles="admin,gerente">
+            <h2 style="margin-bottom: 10px;">Descontos por produto</h2>
 
-    <div class="panel">
-        <h2>Aplicar desconto (%)</h2>
+            <div class="panel">
+                <h2>Aplicar desconto (%)</h2>
 
-        <label for="selectProdutoDesconto">Produto</label>
-        <select id="selectProdutoDesconto"></select>
+                <label for="selectProdutoDesconto">Produto</label>
+                <select id="selectProdutoDesconto"></select>
 
-        <label for="inputPercentualDesconto">Desconto (%)</label>
-        <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
+                <label for="inputPercentualDesconto">Desconto (%)</label>
+                <input type="number" id="inputPercentualDesconto" min="0" max="100" value="0" />
 
-        <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
+                <button class="btn" id="btnAplicarDesconto">Aplicar desconto</button>
 
-        <!-- NOVO BOTÃO PARA REMOVER DESCONTO DO PRODUTO SELECIONADO -->
-        <button class="btn" id="btnRemoverDescontoProduto" style="margin-left: 10px;">
-            Remover desconto deste produto
-        </button>
+                <button class="btn" id="btnRemoverDescontoProduto" style="margin-left: 10px;">
+                    Remover desconto deste produto
+                </button>
 
-        <div class="success" id="mensagemDesconto"></div>
+                <div class="success" id="mensagemDesconto"></div>
 
-        <h2 style="margin: 20px 0;">Descontos ativos</h2>
-        <!-- LISTA DINÂMICA DE DESCONTOS -->
-        <div id="listaDescontos"></div>
-    </div>
-</section>
-
+                <h2 style="margin: 20px 0;">Descontos ativos</h2>
+                <div id="listaDescontos"></div>
+            </div>
+        </section>
 
         <!-- CUPONS -->
         <section id="cupons" class="section" data-roles="admin,gerente,vendedor">
@@ -758,49 +754,8 @@
     </div>
 </div>
 
-<!-- VALIDAÇÃO DE E-MAIL NO REGISTRO -->
-<script>
-    // Valida formato de e-mail (estrutura correta: algo@dominio.extensao)
-    function validarFormatoEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const btnRegistrar = document.getElementById("btnRegistrar");
-        const inputEmailRegistro = document.getElementById("registroEmail");
-        const msg = document.getElementById("loginMensagem");
-
-        if (btnRegistrar && inputEmailRegistro && msg) {
-            // Listener em "captura" pra conseguir bloquear qualquer outro handler de clique se o e-mail estiver inválido
-            btnRegistrar.addEventListener("click", function (event) {
-                const email = inputEmailRegistro.value.trim();
-                msg.innerHTML = "";
-
-                // Se não digitou e-mail, deixa o restante do código decidir (pode ser obrigatório em outro lugar)
-                if (!email) {
-                    msg.innerHTML = "<span style='color:red;'>❌ Digite um e-mail.</span>";
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    return;
-                }
-
-                // Valida formato
-                if (!validarFormatoEmail(email)) {
-                    msg.innerHTML = "<span style='color:red;'>❌ E-mail inválido. Verifique e tente novamente.</span>";
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    return;
-                }
-
-                // Se chegou aqui, formato está OK. A partir daqui seu script.js continua o fluxo normal do registro.
-                // Se você quiser depois, dá pra acrescentar verificação extra de domínio (DNS) por fetch aqui.
-            }, true); // "true" = captura (roda antes dos outros listeners de clique)
-        }
-    });
-</script>
-
+<!-- Scripts principais -->
+<script src="app.js"></script>
 <script src="script.js"></script>
-<script src="script.js" defer></script>
 </body>
 </html>
