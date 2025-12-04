@@ -236,38 +236,6 @@ document.querySelectorAll(".submenu-toggle").forEach(btn => {
     });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    // ...
-
-    // Quando clicar na SETA, só abre/fecha o submenu
-    document.querySelectorAll(".submenu-toggle .arrow").forEach(arrow => {
-        arrow.addEventListener("click", (e) => {
-            // impede que o clique na seta acione o clique do botão .menu-btn
-            e.stopPropagation();
-
-            const btn = arrow.closest(".submenu-toggle");
-            const submenuId = btn.getAttribute("data-submenu");
-            const submenu = document.getElementById(submenuId);
-
-            if (submenu) {
-                submenu.classList.toggle("aberto");
-            }
-        });
-    });
-
-    // seu código de clique nos botões do menu pode continuar igual,
-    // por exemplo:
-    document.querySelectorAll(".menu-btn.sub-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const sectionId = btn.getAttribute("data-section");
-            // aqui você troca de aba/secção normalmente
-            // showSection(sectionId) ou o que você já estiver usando
-        });
-    });
-
-    // ...
-});
-
 
 // ------------------------
 // Navegação e visibilidade
@@ -1563,7 +1531,7 @@ function renderLogsAdmin() {
 }
 
 // ------------------------
-// Cancelamento de venda (apenas admin principal + senha 1337)
+// Cancelamento de venda (apenas admin principal)
 // ------------------------
 function cancelarVenda(idVenda) {
     if (!currentUser.username || currentUser.username.toLowerCase() !== "hilariu") {
@@ -1572,7 +1540,7 @@ function cancelarVenda(idVenda) {
     }
 
     const senha = prompt("Senha do admin principal:");
-    if (senha !== "1337") {
+    if (senha !== "") {
         alert("Senha incorreta. Venda NÃO cancelada.");
         return;
     }
